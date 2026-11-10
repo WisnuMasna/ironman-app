@@ -1,0 +1,14 @@
+---
+globs: src/lib/training/**
+alwaysApply: false
+---
+
+- No magic numbers. Every zone %, offset, duration, threshold lives in `src/lib/training/constants.ts` as a named `SCREAMING_SNAKE_CASE` constant with a comment `// SOURCE: <author/title, URL>` taken from PLAN.md §7–8. If there is no source, write `// SOURCE: project default, tune` — never invent a citation or a "research says" number.
+- Keep functions small and pure (input → output, no side effects). Prefer returning `{ ok: true, value } | { ok: false, error }` over throwing for invalid athlete input.
+- Tests: Vitest, co-located as `<name>.test.ts`. TDD: tests are written and committed BEFORE the implementation; never edit a committed test to make it pass — ask first.
+- Test the invariants in PLAN.md §7.5 and the worked examples in §9 (e.g. CSS 360 s / 180 s → 90 s/100 m; §4 splits total 5:57:00).
+- Run-pace zones are % of threshold PACE (higher % = slower). Power zones are % of FTP (higher % = harder). Don't mix them up.
+- Heat adjustment above 25 °C WBGT must return a warning flag (outside Ely et al. 2007 studied range).
+- Discipline status: if a sport is `skill` (see `disciplineStatus`), its sessions use skill checkpoints + RPE/time targets from `skills.ts` — never zone targets. A `null` threshold means "test needed", never a guessed default.
+- Equipment gating: `hasBike: false` → only indoor spin/stationary-bike "bridge" sessions; no outdoor rides, no FTP test. Open-water swim sessions always carry the safety checklist and are never solo.
+- Thresholds estimated from race results (VDOT) are flagged `estimated: true` until a field test replaces them.

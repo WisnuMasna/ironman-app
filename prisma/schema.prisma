@@ -1,0 +1,14 @@
+// M0 stub only — full athlete/race schema lands in M9.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Healthcheck {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,120 @@
+{
+  "_note": "Race facts from ironman.com (race page, course page, 2026 Athlete Guide) fetched 2026-11-10; re-check against the 2027 Athlete Guide. null = fill in after testing. Profile updated 2026-11-10: strong runner, cycling novice (no bike yet), near-novice swimmer.",
+  "athlete": {
+    "name": "Wisnu",
+    "bodyMassKg": null,
+    "sweatRateLPerH": null,
+    "weeklyHoursAvailable": null,
+    "restDays": null,
+    "longDay": null,
+    "recoveryBlockWeeks": 3
+  },
+  "race": {
+    "name": "IRONMAN 70.3 Da Nang",
+    "location": "East Sea Park, Da Nang, Vietnam",
+    "date": "2027-05-09",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "startTimeLocal": "05:45",
+    "swimM": 1900,
+    "bikeKm": 90,
+    "runKm": 21.1,
+    "swimType": "sea, 1 lap, rolling start",
+    "expectedWaterTempC": 29,
+    "wetsuitLikely": false,
+    "bikeElevationGainM": 278,
+    "airTempHighC": 34,
+    "airTempLowC": 26,
+    "aidStationsBikeKm": [
+      19,
+      37,
+      46,
+      64,
+      79.5
+    ],
+    "aidStationsRunSpacingKm": [
+      1.2,
+      1.4
+    ],
+    "cutoffs": {
+      "swimSec": 4200,
+      "swimT1BikeSec": 19800,
+      "totalSec": 30600
+    }
+  },
+  "goal": {
+    "tiers": [
+      {
+        "tier": "CUTOFFS",
+        "description": "Finish inside all cut-offs (swim 1:10, swim+T1+bike 5:30, total 8:30)"
+      },
+      {
+        "tier": "SUB_630",
+        "finishUnderSec": 23400
+      },
+      {
+        "tier": "SUB_600",
+        "finishUnderSec": 21600,
+        "stretch": true
+      }
+    ],
+    "bufferSec": 240,
+    "splitsSec": {
+      "swim": 3000,
+      "t1": 420,
+      "bike": 10800,
+      "t2": 240,
+      "run": 6900
+    },
+    "_splitsNote": "Stretch (sub-6) starting target totalling 5:56:00; recompute after first CSS/FTP tests (PLAN.md §4)."
+  },
+  "fitness": {
+    "ftpWatts": null,
+    "ftpStatus": "novice-no-test-yet",
+    "cssSecPer100m": null,
+    "cssStatus": "novice-no-test-yet",
+    "thresholdRunPaceSecPerKm": 275,
+    "thresholdRunPaceEstimate": {
+      "estimated": true,
+      "method": "Jack Daniels VDOT table interpolation from HM 1:39:00 (VDOT ~45.7; T pace 4:38/km @45, 4:33/km @46)",
+      "source": "https://coacheseducation.com/pdfs/vdot-tables.pdf",
+      "marathonCrossCheck": "M 3:49:00 ~ VDOT 40, T 5:06/km (endurance limiter)",
+      "confirmWith": "Friel 30-min solo run test in Prep"
+    },
+    "lthrBike": null,
+    "lthrRun": null
+  },
+  "equipment": {
+    "hasBike": false,
+    "bikeFitDone": false,
+    "hasIndoorTrainer": false,
+    "hasClipless": false,
+    "hasHelmet": null
+  },
+  "disciplineStatus": {
+    "swim": "skill",
+    "bike": "skill",
+    "run": "zones"
+  },
+  "experience": {
+    "swim": "novice",
+    "bike": "novice",
+    "run": "experienced",
+    "_note": "bike: has never cycled; swim: barely swims"
+  },
+  "raceResults": [
+    {
+      "distanceM": 21097.5,
+      "timeSec": 5940,
+      "label": "Half marathon 1:39:00",
+      "date": null,
+      "conditionsNote": null
+    },
+    {
+      "distanceM": 42195,
+      "timeSec": 13740,
+      "label": "Marathon 3:49:00",
+      "date": null,
+      "conditionsNote": null
+    }
+  ]
+}

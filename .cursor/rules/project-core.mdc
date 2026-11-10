@@ -1,0 +1,14 @@
+---
+description: Core conventions for the IRONMAN 70.3 training app
+alwaysApply: true
+---
+
+- Read `@PLAN.md` for scope. Work on ONE milestone at a time and do not touch files outside it.
+- TypeScript `strict: true`. No `any`, no non-null `!` assertions unless you explain why in a comment. ES module imports only (no `require`).
+- Architecture: all training logic is PURE functions in `src/lib/training/` (no I/O, no Date.now(), no Prisma). Pass `today` in as a parameter. Pages in `src/app/` stay thin: load data, call lib, render.
+- DB access only via `src/lib/db/` repository functions using Prisma + SQLite.
+- Naming: files `kebab-case.ts`; functions `camelCase` verbs (`buildPhases`, `computeSplits`); types `PascalCase`; constants `SCREAMING_SNAKE_CASE`. Units in names: `durationSec`, `paceSecPerKm`, `cssSecPer100m`, `powerWatts`, `wbgtC`.
+- Store time as integer seconds and distance as metres internally; format only at the UI edge (`src/lib/training/time.ts`).
+- Dates: race and plan dates are local calendar dates (`YYYY-MM-DD`), weeks start Monday. Never mix in UTC conversions in training logic.
+- Before finishing: run `npm test`, `npx tsc --noEmit`, `npm run lint`. Report results. Commit with a small, semantic message.
+- If you are unsure an API exists (Next.js, Prisma, Vitest), check the docs or the codebase instead of guessing.
