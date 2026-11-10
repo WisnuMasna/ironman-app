@@ -67,6 +67,25 @@ export const SWIM_CSS_ZONE_OFFSETS = [
 // https://www.trainingpeaks.com/blog/threshold-tests-for-swim-bike-and-run/
 export const CSS_DISTANCE_PAIR_DIVISOR = 2;
 
+// IRONMAN 70.3 Da Nang race distances and cut-offs.
+// SOURCE: ironman.com race page / 2026 Athlete Guide (PLAN.md §2)
+export const RACE_SWIM_M = 1900;
+export const RACE_BIKE_M = 90000;
+export const RACE_RUN_M = 21100;
+export const CUTOFF_SWIM_SEC = 4200; // 1:10
+export const CUTOFF_SWIM_T1_BIKE_SEC = 19800; // 5:30
+export const CUTOFF_TOTAL_SEC = 30600; // 8:30
+
+// Stretch sub-6:00 starting splits (PLAN.md §4.2).
+// SOURCE: project default, tune (recompute after CSS/FTP tests)
+export const DEFAULT_SUB600_SPLITS_SEC = {
+  swimSec: 3000, // 0:50:00
+  t1Sec: 420, // 0:07:00
+  bikeSec: 10800, // 3:00:00
+  t2Sec: 240, // 0:04:00
+  runSec: 6900, // 1:55:00
+} as const;
+
 // Race distances recognised by the VDOT estimator (metres).
 // SOURCE: project default, tune (standard road distances)
 export const VDOT_HALF_MARATHON_M = 21097.5;
