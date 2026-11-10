@@ -29,8 +29,13 @@ async function TodayContent() {
         {plan.today} · {phase}
         {plan.week.isRecoveryWeek ? " · recovery week" : ""}
       </p>
+      {plan.repeatNextLoadWeek ? (
+        <p className="text-sm text-amber-700">
+          Weekly compliance is low — the next load week will repeat instead of progressing.
+        </p>
+      ) : null}
       {todayDay ? (
-        <DaySessions day={todayDay} />
+        <DaySessions day={todayDay} logs={plan.athlete.workoutLogs} />
       ) : (
         <p className="text-sm text-zinc-500">No sessions scheduled for today.</p>
       )}

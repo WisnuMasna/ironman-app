@@ -28,8 +28,18 @@ async function WeekContent() {
         {plan.athlete.hasBike ? "outdoor allowed" : "indoor bridge"} · bike status{" "}
         {plan.athlete.bikeStatus.toLowerCase()}
       </p>
+      {plan.repeatNextLoadWeek ? (
+        <p className="text-sm text-amber-700">
+          Weekly compliance is low — the next load week will repeat instead of progressing.
+        </p>
+      ) : null}
+      {plan.checkpointWarning === "checkpoint-past-peak" ? (
+        <p className="text-sm text-amber-700">
+          A slipped checkpoint would push S6 or B7 past Peak week.
+        </p>
+      ) : null}
       {plan.week.days.map((day) => (
-        <DaySessions key={day.date} day={day} />
+        <DaySessions key={day.date} day={day} logs={plan.athlete.workoutLogs} />
       ))}
     </div>
   );

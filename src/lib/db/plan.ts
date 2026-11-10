@@ -1,10 +1,27 @@
+import { FitnessTestKind, WorkoutStatus } from "@prisma/client";
+import {
+  applyAdaptedSessionsToWeek,
+  applyNewFitnessTest,
+  computeWeekCompliance,
+  flattenWeekSessions,
+  handleMissedKeySession,
+  replanOverdueCheckpoints,
+  shouldRepeatNextLoadWeek,
+} from "../training/adapt";
 import { buildPhases, type PhasePlan } from "../training/phases";
 import {
   generateWeekSessions,
   type DisciplineStatus,
+  type PlannedSession,
   type WeekPlan,
 } from "../training/sessions";
-import { getAthlete, type AthleteWithTraining } from "./athlete";
+import {
+  getAthlete,
+  latestTestValue,
+  saveSkillTracks,
+  type AthleteWithTraining,
+} from "./athlete";
+import { tracksFromDb, tracksToRows } from "./tracks";
 
 const DEFAULT_WEEKLY_HOURS = 10;
 const DEFAULT_REST_DAYS = [1];
@@ -18,6 +35,8 @@ export type LoadedPlan = {
   weekStartMonday: string;
   phasePlan: PhasePlan;
   week: WeekPlan;
+  repeatNextLoadWeek: boolean;
+  checkpointWarning: "checkpoint-past-peak" | null;
 };
 
 export function calendarDateInZone(now: Date, timeZone: string): string {
@@ -94,12 +113,96 @@ export async function loadWeekPlan(now: Date): Promise<LoadedPlan | null> {
     return null;
   }
 
+  let adapted = week.value;
+  const weekLogs = athlete.workoutLogs.filter(
+    (log) => log.date >= weekStartMonday && log.date <= adapted.days[6]?.date
+  );
+
+  const missedKeys = weekLogs.filter((log) => log.status === WorkoutStatus.MISSED);
+  for (const log of missedKeys) {
+    const sport = prismaSportToSession(log.sport);
+    if (sport === null) continue;
+    const day = adapted.days.find((d) => d.date === log.date);
+    const wasHard = day?.sessions.some((s) => s.sport === sport && s.isHard) ?? false;
+    if (!wasHard) continue;
+    const missed = handleMissedKeySession(adapted, { date: log.date, sport });
+    if (missed.ok) adapted = missed.value;
+  }
+
+  const ftp = latestTestValue(athlete.fitnessTests, FitnessTestKind.FTP);
+  if (ftp !== null) {
+    const applied = applyNewFitnessTest({
+      datedSessions: flattenWeekSessions(adapted),
+      testDate: ftp.date,
+      kind: "FTP",
+      value: ftp.value,
+    });
+    if (applied.ok) {
+      adapted = applyAdaptedSessionsToWeek(adapted, applied.value);
+    }
+  }
+
+  const peak = phases.value.phases.find((p) => p.name === "Peak");
+  const tracks = replanOverdueCheckpoints(
+    tracksFromDb(athlete.skillCheckpoints),
+    today,
+    peak?.startDate ?? race.date
+  );
+  const checkpointWarning = tracks.ok ? tracks.value.warning : null;
+  if (tracks.ok) {
+    const rows = tracksToRows(tracks.value);
+    const changed = rows.some((row) => {
+      const existing = athlete.skillCheckpoints.find((c) => c.code === row.code);
+      return (
+        existing === undefined ||
+        existing.targetDate !== row.targetDate ||
+        existing.doneDate !== row.doneDate
+      );
+    });
+    if (changed) {
+      await saveSkillTracks(athlete.id, rows);
+    }
+  }
+
+  const elapsedDates = new Set(
+    adapted.days.filter((d) => d.date < today).map((d) => d.date)
+  );
+  const plannedCount = adapted.days
+    .filter((d) => elapsedDates.has(d.date))
+    .reduce((n, d) => n + d.sessions.length, 0);
+  const elapsedLogs = weekLogs.filter((l) => elapsedDates.has(l.date));
+  const done = elapsedLogs.filter((l) => l.status === WorkoutStatus.DONE).length;
+  const partial = elapsedLogs.filter((l) => l.status === WorkoutStatus.PARTIAL).length;
+  const compliance = computeWeekCompliance({
+    planned: plannedCount,
+    done,
+    partial,
+  });
+
   return {
     athlete,
     raceDate: race.date,
     today,
     weekStartMonday,
     phasePlan: phases.value,
-    week: week.value,
+    week: adapted,
+    repeatNextLoadWeek: shouldRepeatNextLoadWeek(compliance),
+    checkpointWarning,
   };
+}
+
+function prismaSportToSession(
+  sport: string
+): PlannedSession["sport"] | null {
+  const lower = sport.toLowerCase();
+  if (
+    lower === "swim" ||
+    lower === "bike" ||
+    lower === "run" ||
+    lower === "brick" ||
+    lower === "strength"
+  ) {
+    return lower;
+  }
+  return null;
 }

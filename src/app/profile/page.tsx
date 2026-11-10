@@ -4,7 +4,9 @@ import { latestTestValue } from "@/lib/db/athlete";
 import { loadWeekPlan } from "@/lib/db/plan";
 import { formatDurationHms, formatPaceMinPerKm } from "@/lib/training/time";
 import { buildCogganPowerZones } from "@/lib/training/zones";
-import { saveEquipment, saveFtp } from "../actions";
+import { tracksFromDb } from "@/lib/db/tracks";
+import { getNextTestPrompt } from "@/lib/training/skills";
+import { markCheckpointDone, saveEquipment, saveFtp } from "../actions";
 import { requestNow } from "../request-now";
 
 export default function ProfilePage() {
@@ -32,6 +34,7 @@ async function ProfileContent() {
     FitnessTestKind.RUN_THRESHOLD
   );
   const powerZones = ftp ? buildCogganPowerZones(ftp.value) : null;
+  const testPrompt = getNextTestPrompt(tracksFromDb(athlete.skillCheckpoints));
 
   return (
     <>
@@ -136,6 +139,43 @@ async function ProfileContent() {
             {powerZones.value.find((z) => z.zone === "Z2")?.maxWatts} W
           </p>
         ) : null}
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-lg font-medium">Skill checkpoints</h2>
+        {testPrompt.ok ? (
+          <p className="text-sm text-amber-700">
+            {testPrompt.value.kind} test is now possible ({testPrompt.value.checkpoint}{" "}
+            done).
+          </p>
+        ) : null}
+        <ul className="space-y-2 text-sm">
+          {athlete.skillCheckpoints.map((checkpoint) => (
+            <li
+              key={checkpoint.code}
+              className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-zinc-200 px-3 py-2 dark:border-zinc-700"
+            >
+              <span>
+                <span className="font-medium">{checkpoint.code}</span>{" "}
+                {checkpoint.description} · target {checkpoint.targetDate}
+                {checkpoint.doneDate !== null
+                  ? ` · done ${checkpoint.doneDate}`
+                  : ""}
+              </span>
+              {checkpoint.doneDate === null ? (
+                <form action={markCheckpointDone}>
+                  <input type="hidden" name="code" value={checkpoint.code} />
+                  <button
+                    type="submit"
+                    className="rounded bg-zinc-900 px-2 py-1 text-xs text-white dark:bg-zinc-100 dark:text-zinc-900"
+                  >
+                    Mark done
+                  </button>
+                </form>
+              ) : null}
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className="space-y-3">
