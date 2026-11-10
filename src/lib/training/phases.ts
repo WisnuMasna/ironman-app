@@ -227,7 +227,6 @@ export function buildPhases(
   for (const phase of phases) {
     if (phase.name !== "Base" && phase.name !== "Build") continue;
     const phaseStart = parseLocalDate(phase.startDate)!;
-    const phaseEnd = parseLocalDate(phase.endDate)!;
     let cursor = mondayOnOrBefore(phaseStart);
     // If phase starts mid-week, first full week Monday may be the next Monday.
     if (compareIso(formatLocalDate(cursor), phase.startDate) < 0) {
