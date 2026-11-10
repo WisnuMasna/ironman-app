@@ -1,5 +1,7 @@
+import Link from "next/link";
 import type { WorkoutLog } from "@prisma/client";
 import type { PlannedSession } from "@/lib/training/sessions";
+import { sessionTitle } from "@/lib/training/session-purpose";
 import { IconChevron } from "../icons";
 import { SkillChip, ZoneChip } from "./zone-chip";
 import {
@@ -8,19 +10,6 @@ import {
   sportFillClass,
   sportStripeClass,
 } from "./sport";
-
-function sessionTitle(session: PlannedSession): string {
-  if (session.sport === "brick") return "Brick: ride + run";
-  if (session.sport === "bike" && session.outdoor) return "Outdoor ride";
-  if (session.sport === "bike" && session.type === "spin") return "Spin bridge";
-  if (session.type === "skill" || session.targets.kind === "skill") {
-    return `${session.sport.charAt(0).toUpperCase()}${session.sport.slice(1)} lesson`;
-  }
-  if (session.type === "easy") {
-    return `Easy ${session.sport}`;
-  }
-  return `${session.type.charAt(0).toUpperCase()}${session.type.slice(1)} ${session.sport}`;
-}
 
 function statusLabel(log: WorkoutLog | null): string | null {
   if (log === null) return null;
@@ -41,23 +30,21 @@ export function SessionCard({
   meta,
   log,
   compact = false,
+  href,
 }: {
   session: PlannedSession;
   meta: string;
   log: WorkoutLog | null;
   compact?: boolean;
+  href?: string;
 }) {
   const title = sessionTitle(session);
   const status = statusLabel(log);
   const muted = log?.status === "DONE" || log?.status === "MISSED";
   const softCard = compact ? sportCardSoftClass(session.sport) : "bg-surface";
 
-  return (
-    <article
-      className={`relative overflow-hidden rounded-md shadow-1 ${softCard} ${
-        compact ? "p-3" : "p-4"
-      } ${muted ? "opacity-90" : ""}`}
-    >
+  const body = (
+    <>
       <div
         className={`absolute inset-y-0 left-0 w-1 ${sportStripeClass(session.sport)}`}
         aria-hidden
@@ -100,6 +87,20 @@ export function SessionCard({
           </div>
         </div>
       </div>
-    </article>
+    </>
   );
+
+  const className = `relative block overflow-hidden rounded-md shadow-1 ${softCard} ${
+    compact ? "p-3" : "p-4"
+  } ${muted ? "opacity-90" : ""}`;
+
+  if (href) {
+    return (
+      <Link href={href} className={className} aria-label={`${title}, open details`}>
+        {body}
+      </Link>
+    );
+  }
+
+  return <article className={className}>{body}</article>;
 }

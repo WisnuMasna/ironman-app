@@ -1,3 +1,6 @@
+const BUTTON_CLASS =
+  "flex min-h-tap w-full items-center justify-center rounded-pill bg-primary px-4 text-body font-bold text-on-primary shadow-2 disabled:opacity-50";
+
 export function PrimaryActionBar({
   label,
   onClick,
@@ -14,11 +17,7 @@ export function PrimaryActionBar({
   if (formAction) {
     return (
       <form action={formAction} className="sticky bottom-[5.5rem] z-30">
-        <button
-          type="submit"
-          disabled={disabled}
-          className="flex min-h-tap w-full items-center justify-center rounded-pill bg-primary px-4 text-body font-bold text-on-primary shadow-2 disabled:opacity-50"
-        >
+        <button type="submit" disabled={disabled} className={BUTTON_CLASS}>
           {label}
         </button>
       </form>
@@ -31,7 +30,7 @@ export function PrimaryActionBar({
         type={type}
         onClick={onClick}
         disabled={disabled}
-        className="flex min-h-tap w-full items-center justify-center rounded-pill bg-primary px-4 text-body font-bold text-on-primary shadow-2 disabled:opacity-50"
+        className={BUTTON_CLASS}
       >
         {label}
       </button>

@@ -20,6 +20,7 @@ export function SessionCardWithLog({
   moveSlots,
   meta,
   compact = false,
+  href,
 }: {
   session: PlannedSession;
   date: string;
@@ -27,6 +28,7 @@ export function SessionCardWithLog({
   moveSlots: string[];
   meta: string;
   compact?: boolean;
+  href?: string;
 }) {
   const [status, setStatus] = useState(log?.status ?? "DONE");
   const [missAction, setMissAction] = useState<"skip" | "move">("skip");
@@ -34,7 +36,13 @@ export function SessionCardWithLog({
 
   return (
     <div className="space-y-2">
-      <SessionCard session={session} meta={meta} log={log} compact={compact} />
+      <SessionCard
+        session={session}
+        meta={meta}
+        log={log}
+        compact={compact}
+        href={href}
+      />
       {!compact && log === null ? (
         <form action={saveWorkoutLog} className="flex flex-wrap gap-2">
           <input type="hidden" name="date" value={date} />
@@ -206,6 +214,7 @@ export function DaySessions({
               moveSlots={moveSlotsByDate?.[day.date] ?? []}
               meta={index === 0 ? "AM" : "PM"}
               compact={compact}
+              href={`/session/${day.date}/${index}`}
             />
           </li>
         ))}
