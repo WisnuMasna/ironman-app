@@ -4,28 +4,42 @@ import { useSyncExternalStore } from "react";
 import type { ChecklistItem } from "@/lib/training/checklist";
 
 const STORAGE_KEY = "ironman-race-checklist-done";
+const EMPTY_DONE: Record<string, boolean> = {};
+
+let cachedRaw: string | null = null;
+let cachedDone: Record<string, boolean> = EMPTY_DONE;
 
 function subscribe(onStoreChange: () => void): () => void {
-  window.addEventListener("storage", onStoreChange);
-  return () => window.removeEventListener("storage", onStoreChange);
+  const onChange = () => onStoreChange();
+  window.addEventListener("storage", onChange);
+  return () => window.removeEventListener("storage", onChange);
 }
 
 function readDone(): Record<string, boolean> {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return {};
+    if (raw === cachedRaw) {
+      return cachedDone;
+    }
+    cachedRaw = raw;
+    if (!raw) {
+      cachedDone = EMPTY_DONE;
+      return cachedDone;
+    }
     const parsed: unknown = JSON.parse(raw);
     if (parsed !== null && typeof parsed === "object") {
-      return parsed as Record<string, boolean>;
+      cachedDone = parsed as Record<string, boolean>;
+      return cachedDone;
     }
   } catch {
     // ignore corrupt storage
   }
-  return {};
+  cachedDone = EMPTY_DONE;
+  return cachedDone;
 }
 
 function getServerSnapshot(): Record<string, boolean> {
-  return {};
+  return EMPTY_DONE;
 }
 
 export function ChecklistClient({ items }: { items: ChecklistItem[] }) {
@@ -33,7 +47,10 @@ export function ChecklistClient({ items }: { items: ChecklistItem[] }) {
 
   function toggle(id: string): void {
     const next = { ...readDone(), [id]: !done[id] };
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    const raw = JSON.stringify(next);
+    window.localStorage.setItem(STORAGE_KEY, raw);
+    cachedRaw = raw;
+    cachedDone = next;
     window.dispatchEvent(new Event("storage"));
   }
 
