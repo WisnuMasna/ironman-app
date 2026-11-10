@@ -68,6 +68,60 @@ describe("sessions.ts — weekly generator invariants", () => {
     }
   });
 
+  it("uses zone targets for bike when discipline status is zones", () => {
+    const phases = buildPhases("2027-05-09", "2026-11-10", 3);
+    expect(phases.ok).toBe(true);
+    if (!phases.ok) return;
+
+    const week = generateWeekSessions({
+      weekStartMonday: "2026-12-07",
+      raceDate: "2027-05-09",
+      today: "2026-11-10",
+      athlete: {
+        ...ATHLETE,
+        hasBike: true,
+        disciplineStatus: { ...ATHLETE.disciplineStatus, bike: "zones" },
+      },
+      phasePlan: phases.value,
+    });
+    expect(week.ok).toBe(true);
+    if (!week.ok) return;
+
+    const bikes = week.value.days
+      .flatMap((d) => d.sessions)
+      .filter((s) => s.sport === "bike");
+    expect(bikes.length).toBeGreaterThan(0);
+    for (const s of bikes) {
+      expect(s.targets.kind).toBe("zone");
+      expect(s.outdoor).toBe(true);
+    }
+  });
+
+  it("marks bike sessions outdoor when hasBike is true", () => {
+    const phases = buildPhases("2027-05-09", "2026-11-10", 3);
+    expect(phases.ok).toBe(true);
+    if (!phases.ok) return;
+
+    const week = generateWeekSessions({
+      weekStartMonday: "2026-12-07",
+      raceDate: "2027-05-09",
+      today: "2026-11-10",
+      athlete: { ...ATHLETE, hasBike: true },
+      phasePlan: phases.value,
+    });
+    expect(week.ok).toBe(true);
+    if (!week.ok) return;
+
+    const bikes = week.value.days
+      .flatMap((d) => d.sessions)
+      .filter((s) => s.sport === "bike");
+    expect(bikes.length).toBeGreaterThan(0);
+    for (const s of bikes) {
+      expect(s.outdoor).toBe(true);
+      expect(s.type).toBe("outdoor-allowed");
+    }
+  });
+
   it("uses skill targets (not zones) for skill disciplines; never outdoor bike without a bike", () => {
     const phases = buildPhases("2027-05-09", "2026-11-10", 3);
     expect(phases.ok).toBe(true);

@@ -138,10 +138,12 @@ export function generateWeekSessions(input: {
     phase !== "Prep" &&
     !(phase === "Base" && isEarlyBase(input.weekStartMonday, input.phasePlan));
 
+  // PLAN.md M10 / §5.6: hasBike false → indoor-bridge only; hasBike true → outdoor allowed.
+  // B1/fit skill gating stays in skills.ts until checkpoint ticking (M11).
   const bikeMode = planBikeSessionMode({
     hasBike: input.athlete.hasBike,
-    bikeFitDone: input.athlete.bikeFitDone ?? false,
-    checkpointB1Done: false,
+    bikeFitDone: input.athlete.hasBike,
+    checkpointB1Done: input.athlete.hasBike,
   });
 
   const runCap = input.athlete.runSessionsCap ?? DEFAULT_RUN_SESSIONS_CAP;
