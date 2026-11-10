@@ -3,8 +3,8 @@ import type { DayPlan } from "@/lib/training/sessions";
 
 const DAY_INITIALS = ["M", "T", "W", "T", "F", "S", "S"];
 
-function sportDotClass(sport: string, isToday: boolean): string {
-  if (isToday) return "bg-on-primary";
+function sportDotClass(sport: string, selected: boolean): string {
+  if (selected) return "bg-on-primary";
   switch (sport) {
     case "swim":
       return "bg-swim";
@@ -23,32 +23,37 @@ function sportDotClass(sport: string, isToday: boolean): string {
 export function WeekStrip({
   days,
   today,
+  selected,
   hrefForDate,
 }: {
   days: DayPlan[];
   today: string;
+  selected?: string;
   hrefForDate?: (date: string) => string;
 }) {
+  const selectedDate = selected ?? today;
+
   return (
     <div className="grid grid-cols-7 gap-1.5">
       {days.map((day, index) => {
+        const isSelected = day.date === selectedDate;
         const isToday = day.date === today;
         const dayNum = Number(day.date.slice(-2));
         const sports = [...new Set(day.sessions.map((s) => s.sport))];
         const label = `${DAY_INITIALS[index]} ${dayNum}, ${
           sports.length === 0 ? "rest" : sports.join(" and ")
-        }`;
+        }${isToday ? ", today" : ""}`;
         const className = `flex min-h-tap flex-col items-center justify-center gap-1 rounded-pill px-1 py-2.5 text-center transition-colors duration-[var(--motion-med)] ${
-          isToday
+          isSelected
             ? "bg-primary text-on-primary shadow-2"
-            : "bg-surface text-text shadow-1"
-        }`;
+            : "bg-surface text-text shadow-1 hover:bg-surface-2"
+        } ${isToday && !isSelected ? "ring-2 ring-primary/40" : ""}`;
 
         const inner = (
           <>
             <span
               className={`text-caption font-bold ${
-                isToday ? "text-on-primary/80" : "text-faint"
+                isSelected ? "text-on-primary/80" : "text-faint"
               }`}
             >
               {DAY_INITIALS[index]}
@@ -58,14 +63,14 @@ export function WeekStrip({
               {sports.length === 0 ? (
                 <span
                   className={`h-1.5 w-1.5 rounded-full ring-1 ${
-                    isToday ? "ring-on-primary/70" : "ring-border-strong"
+                    isSelected ? "ring-on-primary/70" : "ring-border-strong"
                   }`}
                 />
               ) : (
                 sports.slice(0, 3).map((sport) => (
                   <span
                     key={sport}
-                    className={`h-1.5 w-1.5 rounded-full ${sportDotClass(sport, isToday)}`}
+                    className={`h-1.5 w-1.5 rounded-full ${sportDotClass(sport, isSelected)}`}
                   />
                 ))
               )}
@@ -79,6 +84,7 @@ export function WeekStrip({
               key={day.date}
               href={hrefForDate(day.date)}
               aria-label={label}
+              aria-current={isSelected ? "date" : undefined}
               className={className}
             >
               {inner}
@@ -87,7 +93,12 @@ export function WeekStrip({
         }
 
         return (
-          <div key={day.date} aria-label={label} className={className}>
+          <div
+            key={day.date}
+            aria-label={label}
+            aria-current={isSelected ? "date" : undefined}
+            className={className}
+          >
             {inner}
           </div>
         );

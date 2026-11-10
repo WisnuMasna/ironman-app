@@ -8,6 +8,7 @@ import { moveSlotsByDate } from "@/lib/db/move-slots";
 import { loadWeekPlan } from "@/lib/db/plan";
 import {
   diffCalendarDays,
+  formatDayMonth,
   formatLongDate,
   greetingForHour,
 } from "@/lib/training/dates";
@@ -15,27 +16,43 @@ import { reasonCodeToPlainNote } from "@/lib/training/plan-change";
 import { requestNow } from "./request-now";
 import { DaySessions } from "./ui/session-list";
 
-export default function Home() {
+const DAY_ISO = /^\d{4}-\d{2}-\d{2}$/;
+
+export default function Home(props: PageProps<"/">) {
   return (
     <main className="screen">
       <Suspense fallback={<p className="text-sm text-muted">Loading today…</p>}>
-        <TodayContent />
+        <TodayContent searchParams={props.searchParams} />
       </Suspense>
     </main>
   );
 }
 
-async function TodayContent() {
+async function TodayContent({
+  searchParams,
+}: {
+  searchParams: PageProps<"/">["searchParams"];
+}) {
   const now = await requestNow();
   const plan = await loadWeekPlan(now);
   if (plan === null) {
     return <p>No athlete seeded. Run `npx prisma db seed`.</p>;
   }
 
-  const todayDay = plan.week.days.find((d) => d.date === plan.today);
-  const sessionCount = todayDay?.sessions.length ?? 0;
+  const params = await searchParams;
+  const rawDay = typeof params.day === "string" ? params.day : undefined;
+  const selectedDate =
+    rawDay &&
+    DAY_ISO.test(rawDay) &&
+    plan.week.days.some((d) => d.date === rawDay)
+      ? rawDay
+      : plan.today;
+
+  const selectedDay = plan.week.days.find((d) => d.date === selectedDate);
+  const isViewingToday = selectedDate === plan.today;
+  const sessionCount = selectedDay?.sessions.length ?? 0;
   const totalMin =
-    todayDay?.sessions.reduce((sum, s) => sum + s.durationMin, 0) ?? 0;
+    selectedDay?.sessions.reduce((sum, s) => sum + s.durationMin, 0) ?? 0;
   const daysToGo = Math.max(0, diffCalendarDays(plan.raceDate, plan.today));
   const totalWeeks = Math.max(
     1,
@@ -116,25 +133,36 @@ async function TodayContent() {
         ]}
       />
 
-      <WeekStrip days={plan.week.days} today={plan.today} />
+      <WeekStrip
+        days={plan.week.days}
+        today={plan.today}
+        selected={selectedDate}
+        hrefForDate={(date) =>
+          date === plan.today ? "/" : `/?day=${encodeURIComponent(date)}`
+        }
+      />
 
       <section className="space-y-3">
         <div className="flex items-end justify-between gap-2">
-          <h2 className="text-h3 font-bold">Today</h2>
+          <h2 className="text-h3 font-bold">
+            {isViewingToday ? "Today" : formatDayMonth(selectedDate)}
+          </h2>
           <p className="text-sm text-muted">
             {sessionCount} session{sessionCount === 1 ? "" : "s"}
-            {totalMin > 0 ? ` · ${Math.floor(totalMin / 60) > 0 ? `${Math.floor(totalMin / 60)} h ` : ""}${totalMin % 60} min` : ""}
+            {totalMin > 0
+              ? ` · ${Math.floor(totalMin / 60) > 0 ? `${Math.floor(totalMin / 60)} h ` : ""}${totalMin % 60} min`
+              : ""}
           </p>
         </div>
-        {todayDay ? (
+        {selectedDay ? (
           <DaySessions
-            day={todayDay}
+            day={selectedDay}
             logs={plan.athlete.workoutLogs}
             moveSlotsByDate={moveSlotsByDate(plan.week)}
             showDate={false}
           />
         ) : (
-          <p className="text-sm text-muted">No sessions scheduled for today.</p>
+          <p className="text-sm text-muted">No sessions scheduled for this day.</p>
         )}
       </section>
     </>
