@@ -201,3 +201,15 @@ export const VDOT_TABLE = [
   { vdot: 84, halfMarathonSec: 3505, marathonSec: 7344, thresholdPaceSecPerKm: 168 }, // T 2:48
   { vdot: 85, halfMarathonSec: 3470, marathonSec: 7270, thresholdPaceSecPerKm: 166 }, // T 2:46
 ] as const;
+
+export const SECONDS_PER_HOUR = 3600;
+
+// Hydration & fuelling (ACSM/AND/DC 2016 position paper).
+// SOURCE: https://www.dietitians.ca/DietitiansOfCanada/media/Documents/Resources/noap-position-paper.pdf
+export const MAX_BODY_MASS_LOSS_PCT = 2;
+export const SWEAT_SODIUM_MG_PER_L = 1000; // ~1 g/L average sweat sodium
+export const CARB_G_PER_H_MODERATE_MIN = 30; // 1–2.5 h efforts
+export const CARB_G_PER_H_MODERATE_MAX = 60;
+export const CARB_G_PER_H_LONG_MIN = 30; // efforts over ~2.5–3 h: up to 90 g/h
+export const CARB_G_PER_H_LONG_MAX = 90;
+export const CARB_LONG_DURATION_SEC = 9000; // 2.5 h — SOURCE: project default, tune (ACSM band edge)
