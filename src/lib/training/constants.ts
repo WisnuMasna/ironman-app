@@ -86,6 +86,13 @@ export const DEFAULT_SUB600_SPLITS_SEC = {
   runSec: 6900, // 1:55:00
 } as const;
 
+// Heat-adjusted run pacing (Ely et al. 2007).
+// Slowdown for ~3-hour marathoners ≈ 3.2% per 5 °C WBGT rise, relative to the 5–10 °C band.
+// SOURCE: Ely et al. 2007, https://pubmed.ncbi.nlm.nih.gov/17473775/
+export const HEAT_SLOWDOWN_PCT_PER_5C_WBGT = 3.2;
+export const HEAT_REFERENCE_WBGT_C = 10; // top of coolest studied band (5–10 °C)
+export const HEAT_STUDIED_MAX_WBGT_C = 25; // above this → extrapolated warning
+
 // Race distances recognised by the VDOT estimator (metres).
 // SOURCE: project default, tune (standard road distances)
 export const VDOT_HALF_MARATHON_M = 21097.5;
