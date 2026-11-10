@@ -103,6 +103,34 @@ export const PHASE_BASE_WEEKS = 12; // weeks 13–24
 // Prep is whatever remains from `today` before Base; shrink Prep first, then Base.
 // SOURCE: project default, tune
 
+// Skill-track target dates (project defaults from PLAN.md §7.8).
+// SOURCE: project default, tune
+export const SKILL_SWIM_TARGET_DATES = {
+  S1: "2026-12-15", // mid-Dec
+  S2: "2027-01-07", // early Jan
+  S3: "2027-01-15", // mid-Jan — CSS test possible
+  S4: "2027-02-15", // mid-Feb decision checkpoint
+  S5: "2027-03-31", // end of Mar
+} as const;
+
+export const SKILL_BIKE_B5_TARGET_DATE = "2027-02-15"; // mid-Feb — FTP test possible
+
+// Bike relative offsets from B0 target date (days).
+// SOURCE: project default, tune (PLAN.md §7.8)
+export const SKILL_BIKE_OFFSET_DAYS_FROM_B0 = {
+  B1: 14,
+  B2: 21,
+  B3: 28,
+  B4: 42,
+} as const;
+
+export const OPEN_WATER_SAFETY_CHECKLIST = [
+  "buddy",
+  "bright-cap",
+  "tow-float",
+  "conditions-checked",
+] as const;
+
 // Race distances recognised by the VDOT estimator (metres).
 // SOURCE: project default, tune (standard road distances)
 export const VDOT_HALF_MARATHON_M = 21097.5;
