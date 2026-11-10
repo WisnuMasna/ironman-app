@@ -2,131 +2,127 @@
 
 import { useState } from "react";
 import type { WorkoutLog } from "@prisma/client";
+import { SessionCard } from "@/components/ui/session-card";
+import { SportIcon } from "@/components/ui/sport";
 import { saveWorkoutLog } from "../actions";
 import type { DayPlan, PlannedSession } from "@/lib/training/sessions";
 
 const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-function sessionLabel(session: PlannedSession): string {
-  const sport = session.sport;
-  const where = session.sport === "bike" && session.outdoor ? "outdoor" : session.type;
-  if (session.targets.kind === "skill") {
-    return `${sport} · ${where} · RPE ${session.targets.rpe} · ${session.durationMin} min`;
-  }
-  return `${sport} · ${where} · ${session.targets.zone} · ${session.durationMin} min`;
-}
-
 function logKey(date: string, sport: string): string {
   return `${date}|${sport}`;
 }
 
-export function SessionCard({
+export function SessionCardWithLog({
   session,
   date,
   log,
   moveSlots,
+  meta,
+  compact = false,
 }: {
   session: PlannedSession;
   date: string;
   log: WorkoutLog | null;
   moveSlots: string[];
+  meta: string;
+  compact?: boolean;
 }) {
   const [status, setStatus] = useState(log?.status ?? "DONE");
   const [missAction, setMissAction] = useState<"skip" | "move">("skip");
+  const [open, setOpen] = useState(false);
 
   return (
-    <li className="space-y-2 rounded-md border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700">
-      <p className="font-medium capitalize">{sessionLabel(session)}</p>
-      {session.outdoor ? (
-        <p className="text-xs text-emerald-700 dark:text-emerald-400">Outdoor ride</p>
-      ) : session.sport === "bike" ? (
-        <p className="text-xs text-zinc-500">Indoor / bridge</p>
-      ) : null}
-      {log !== null ? (
-        <p className="text-xs text-zinc-600 dark:text-zinc-400">
-          Logged: {log.status.toLowerCase()}
-          {log.movedToDate === "skip"
-            ? " · skipped"
-            : log.movedToDate
-              ? ` · moved to ${log.movedToDate}`
-              : ""}
-          {log.rpe !== null ? ` · RPE ${log.rpe}` : ""} · {log.durationMin} min
-        </p>
-      ) : null}
-      <form action={saveWorkoutLog} className="flex flex-wrap items-end gap-2 text-xs">
-        <input type="hidden" name="date" value={date} />
-        <input type="hidden" name="sport" value={session.sport} />
-        <input type="hidden" name="durationMin" value={session.durationMin} />
-        <label className="flex flex-col gap-1">
-          Status
-          <select
-            name="status"
-            value={status}
-            onChange={(e) =>
-              setStatus(e.target.value as "DONE" | "PARTIAL" | "MISSED")
-            }
-            className="rounded border border-zinc-300 bg-white px-1 py-0.5 dark:border-zinc-600 dark:bg-zinc-900"
-          >
-            <option value="DONE">Done</option>
-            <option value="PARTIAL">Partial</option>
-            <option value="MISSED">Missed</option>
-          </select>
-        </label>
-        {status === "MISSED" ? (
-          <>
-            <label className="flex flex-col gap-1">
-              Missed action
+    <div className="space-y-2">
+      <button
+        type="button"
+        className="w-full text-left"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+      >
+        <SessionCard session={session} meta={meta} log={log} compact={compact} />
+      </button>
+      {open ? (
+        <form
+          action={saveWorkoutLog}
+          className="space-y-3 rounded-md bg-surface-2 p-3 text-sm"
+        >
+          <input type="hidden" name="date" value={date} />
+          <input type="hidden" name="sport" value={session.sport} />
+          <input type="hidden" name="durationMin" value={session.durationMin} />
+          <div className="flex flex-wrap items-end gap-2">
+            <label className="flex min-w-[7rem] flex-1 flex-col gap-1">
+              <span className="text-caption font-bold text-faint">Status</span>
               <select
-                name="missAction"
-                value={missAction}
+                name="status"
+                value={status}
                 onChange={(e) =>
-                  setMissAction(e.target.value === "move" ? "move" : "skip")
+                  setStatus(e.target.value as "DONE" | "PARTIAL" | "MISSED")
                 }
-                className="rounded border border-zinc-300 bg-white px-1 py-0.5 dark:border-zinc-600 dark:bg-zinc-900"
+                className="min-h-tap rounded-sm border border-border-strong bg-surface px-2 py-2"
               >
-                <option value="skip">Skip (drop)</option>
-                <option value="move" disabled={moveSlots.length === 0}>
-                  Move within week
-                </option>
+                <option value="DONE">Done</option>
+                <option value="PARTIAL">Partial</option>
+                <option value="MISSED">Missed</option>
               </select>
             </label>
-            {missAction === "move" && moveSlots.length > 0 ? (
-              <label className="flex flex-col gap-1">
-                Move to
+            <label className="flex w-20 flex-col gap-1">
+              <span className="text-caption font-bold text-faint">RPE</span>
+              <input
+                type="number"
+                name="rpe"
+                min={1}
+                max={10}
+                defaultValue={log?.rpe ?? ""}
+                className="min-h-tap rounded-sm border border-border-strong bg-surface px-2 py-2 font-numeric"
+              />
+            </label>
+          </div>
+          {status === "MISSED" ? (
+            <div className="flex flex-wrap gap-2">
+              <label className="flex min-w-[8rem] flex-1 flex-col gap-1">
+                <span className="text-caption font-bold text-faint">Missed action</span>
                 <select
-                  name="moveToDate"
-                  className="rounded border border-zinc-300 bg-white px-1 py-0.5 dark:border-zinc-600 dark:bg-zinc-900"
-                  defaultValue={moveSlots[0]}
+                  name="missAction"
+                  value={missAction}
+                  onChange={(e) =>
+                    setMissAction(e.target.value === "move" ? "move" : "skip")
+                  }
+                  className="min-h-tap rounded-sm border border-border-strong bg-surface px-2 py-2"
                 >
-                  {moveSlots.map((slot) => (
-                    <option key={slot} value={slot}>
-                      {slot}
-                    </option>
-                  ))}
+                  <option value="skip">Skip (drop)</option>
+                  <option value="move" disabled={moveSlots.length === 0}>
+                    Move within week
+                  </option>
                 </select>
               </label>
-            ) : null}
-          </>
-        ) : null}
-        <label className="flex flex-col gap-1">
-          RPE
-          <input
-            type="number"
-            name="rpe"
-            min={1}
-            max={10}
-            defaultValue={log?.rpe ?? ""}
-            className="w-16 rounded border border-zinc-300 px-1 py-0.5 dark:border-zinc-600 dark:bg-zinc-900"
-          />
-        </label>
-        <button
-          type="submit"
-          className="rounded bg-zinc-900 px-2 py-1 text-white dark:bg-zinc-100 dark:text-zinc-900"
-        >
-          Log
-        </button>
-      </form>
-    </li>
+              {missAction === "move" && moveSlots.length > 0 ? (
+                <label className="flex min-w-[8rem] flex-1 flex-col gap-1">
+                  <span className="text-caption font-bold text-faint">Move to</span>
+                  <select
+                    name="moveToDate"
+                    className="min-h-tap rounded-sm border border-border-strong bg-surface px-2 py-2"
+                    defaultValue={moveSlots[0]}
+                  >
+                    {moveSlots.map((slot) => (
+                      <option key={slot} value={slot}>
+                        {slot}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+            </div>
+          ) : null}
+          <button
+            type="submit"
+            className="flex min-h-tap w-full items-center justify-center rounded-pill bg-primary px-4 text-body font-bold text-on-primary"
+          >
+            Log session
+          </button>
+        </form>
+      ) : null}
+    </div>
   );
 }
 
@@ -134,35 +130,62 @@ export function DaySessions({
   day,
   logs,
   moveSlotsByDate,
+  showDate = true,
+  compact = false,
 }: {
   day: DayPlan;
   logs: WorkoutLog[];
   moveSlotsByDate?: Record<string, string[]>;
+  showDate?: boolean;
+  compact?: boolean;
 }) {
   const name = DAY_NAMES[day.dayOfWeek - 1] ?? "";
   const byKey = new Map(
     logs.map((log) => [logKey(log.date, log.sport.toLowerCase()), log])
   );
+
+  if (day.sessions.length === 0) {
+    return (
+      <section className="space-y-2">
+        {showDate ? (
+          <h3 className="text-sm font-bold text-muted">
+            {name} {day.date}
+          </h3>
+        ) : null}
+        <div className="flex items-center gap-3 rounded-md bg-surface px-4 py-4 shadow-1">
+          <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-surface-2 text-muted">
+            <SportIcon sport="rest" />
+          </div>
+          <div>
+            <p className="font-bold">Rest day</p>
+            <p className="text-sm text-muted">Recovery is part of the plan.</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="space-y-2">
-      <h3 className="text-sm font-semibold">
-        {name} {day.date}
-      </h3>
-      {day.sessions.length === 0 ? (
-        <p className="text-sm text-zinc-500">Rest</p>
-      ) : (
-        <ul className="space-y-2">
-          {day.sessions.map((session, index) => (
-            <SessionCard
-              key={`${day.date}-${session.sport}-${index}`}
+      {showDate ? (
+        <h3 className="text-sm font-bold text-muted">
+          {name} {day.date}
+        </h3>
+      ) : null}
+      <ul className="space-y-2">
+        {day.sessions.map((session, index) => (
+          <li key={`${day.date}-${session.sport}-${index}`}>
+            <SessionCardWithLog
               session={session}
               date={day.date}
               log={byKey.get(logKey(day.date, session.sport)) ?? null}
               moveSlots={moveSlotsByDate?.[day.date] ?? []}
+              meta={index === 0 ? "AM" : "PM"}
+              compact={compact}
             />
-          ))}
-        </ul>
-      )}
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

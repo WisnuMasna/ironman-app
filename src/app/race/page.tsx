@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import { FitnessTestKind } from "@prisma/client";
+import { ChecklistClient } from "../ui/checklist";
 import { getAthlete, latestTestValue } from "@/lib/db/athlete";
 import { buildRaceWeekChecklist } from "@/lib/training/checklist";
 import {
@@ -21,14 +23,11 @@ import {
   formatPaceMinPerKm,
   formatPacePer100m,
 } from "@/lib/training/time";
-import { FitnessTestKind } from "@prisma/client";
-import { ChecklistClient } from "../ui/checklist";
 
 export default function RacePage() {
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-8">
-      <h1 className="text-2xl font-semibold tracking-tight">Race day</h1>
-      <Suspense fallback={<p className="text-sm text-zinc-500">Loading race plan…</p>}>
+    <main className="screen">
+      <Suspense fallback={<p className="text-sm text-muted">Loading races…</p>}>
         <RaceContent />
       </Suspense>
     </main>
@@ -85,94 +84,125 @@ async function RaceContent() {
   const sweat = latestTestValue(athlete.fitnessTests, FitnessTestKind.SWEAT_RATE);
 
   return (
-    <div className="space-y-8">
-      <section className="space-y-2">
-        <h2 className="text-lg font-medium">{race.name}</h2>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+    <>
+      <header className="space-y-1">
+        <h1 className="text-h1 font-extrabold">Races</h1>
+        <p className="text-sm text-muted">A race, cut-offs, fuel and packing</p>
+      </header>
+
+      <section className="rounded-lg bg-surface p-4 shadow-1">
+        <p className="text-overline font-bold tracking-[0.08em] text-faint uppercase">
+          A race · 70.3
+        </p>
+        <h2 className="mt-1 text-h2 font-extrabold">{race.name}</h2>
+        <p className="text-sm text-muted">
           {race.date} · start {race.startTimeLocal} · swim cut-off{" "}
           {formatDurationHms(CUTOFF_SWIM_SEC)}
         </p>
       </section>
 
-      <section className="space-y-3">
-        <h2 className="text-lg font-medium">Stretch splits (sub-6)</h2>
+      <section className="space-y-3 rounded-lg bg-surface p-4 shadow-1">
+        <h2 className="text-h3 font-bold">Stretch splits (sub-6)</h2>
         {metrics.ok ? (
-          <ul className="space-y-1 text-sm">
-            <li>
-              Swim {formatDurationHms(splits.swimSec)} ·{" "}
-              {formatPacePer100m(metrics.value.swimPaceSecPer100m)}
+          <ul className="space-y-2 text-sm">
+            <li className="flex justify-between gap-3">
+              <span className="text-swim-ink font-bold">Swim</span>
+              <span className="font-numeric">
+                {formatDurationHms(splits.swimSec)} ·{" "}
+                {formatPacePer100m(metrics.value.swimPaceSecPer100m)}
+              </span>
             </li>
-            <li>T1 {formatDurationHms(splits.t1Sec)}</li>
-            <li>
-              Bike {formatDurationHms(splits.bikeSec)} ·{" "}
-              {metrics.value.bikeSpeedKph.toFixed(1)} km/h
+            <li className="flex justify-between gap-3">
+              <span className="text-muted">T1</span>
+              <span className="font-numeric">{formatDurationHms(splits.t1Sec)}</span>
             </li>
-            <li>T2 {formatDurationHms(splits.t2Sec)}</li>
-            <li>
-              Run {formatDurationHms(splits.runSec)} ·{" "}
-              {formatPaceMinPerKm(metrics.value.runPaceSecPerKm)}
+            <li className="flex justify-between gap-3">
+              <span className="text-bike-ink font-bold">Bike</span>
+              <span className="font-numeric">
+                {formatDurationHms(splits.bikeSec)} ·{" "}
+                {metrics.value.bikeSpeedKph.toFixed(1)} km/h
+              </span>
             </li>
-            <li className="font-medium">
-              Total {formatDurationHms(metrics.value.totalSec)}
-              {cutoffs.ok ? " · inside cut-offs" : ` · ${cutoffs.error}`}
+            <li className="flex justify-between gap-3">
+              <span className="text-muted">T2</span>
+              <span className="font-numeric">{formatDurationHms(splits.t2Sec)}</span>
+            </li>
+            <li className="flex justify-between gap-3">
+              <span className="text-run-ink font-bold">Run</span>
+              <span className="font-numeric">
+                {formatDurationHms(splits.runSec)} ·{" "}
+                {formatPaceMinPerKm(metrics.value.runPaceSecPerKm)}
+              </span>
+            </li>
+            <li className="flex justify-between gap-3 border-t border-border pt-2 font-bold">
+              <span>Total</span>
+              <span className="font-numeric">
+                {formatDurationHms(metrics.value.totalSec)}
+                {cutoffs.ok ? " · inside cut-offs" : ` · ${cutoffs.error}`}
+              </span>
             </li>
           </ul>
         ) : (
           <p className="text-sm">Could not compute leg metrics.</p>
         )}
         {minBike.ok ? (
-          <p className="text-sm text-amber-800 dark:text-amber-200">
-            Minimum bike average to hold the 5:30 swim+T1+bike cut-off:{" "}
-            {minBike.value.toFixed(1)} km/h
+          <p className="rounded-md bg-warning-soft px-3 py-2 text-sm text-warning">
+            Minimum bike average for the 5:30 swim+T1+bike cut-off:{" "}
+            <span className="font-numeric font-bold">{minBike.value.toFixed(1)} km/h</span>
           </p>
         ) : null}
         {heat.ok ? (
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          <div className="rounded-md bg-heat-soft px-3 py-2 text-sm text-heat">
             Heat-adjusted run at WBGT 28 °C:{" "}
-            {formatPaceMinPerKm(heat.value.adjustedPaceSecPerKm)}
+            <span className="font-numeric font-bold">
+              {formatPaceMinPerKm(heat.value.adjustedPaceSecPerKm)}
+            </span>
             {heat.value.warning === "extrapolated"
               ? " (extrapolated — above studied range)"
               : ""}
-          </p>
+          </div>
         ) : null}
       </section>
 
-      <section className="space-y-3">
-        <h2 className="text-lg font-medium">Bike fuel plan</h2>
+      <section className="space-y-3 rounded-lg bg-surface p-4 shadow-1">
+        <h2 className="text-h3 font-bold">Bike fuel plan</h2>
         {fuel.ok ? (
           <>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="text-sm text-muted">
               Per hour: {fuel.value.perHour.carbG} g carb ·{" "}
               {fuel.value.perHour.fluidL.toFixed(2)} L ·{" "}
               {Math.round(fuel.value.perHour.sodiumMg)} mg sodium
             </p>
             {fuel.value.warnings.length > 0 ? (
-              <p className="text-sm text-amber-700">
+              <p className="text-sm text-warning">
                 Warnings: {fuel.value.warnings.join(", ")}
               </p>
             ) : null}
             <ul className="space-y-1 text-sm">
               {fuel.value.aidStations.map((aid) => (
-                <li key={aid.km}>
-                  km {aid.km}: {aid.carbG} g · {aid.fluidL.toFixed(2)} L ·{" "}
-                  {Math.round(aid.sodiumMg)} mg Na
+                <li key={aid.km} className="flex justify-between gap-3">
+                  <span>km {aid.km}</span>
+                  <span className="font-numeric text-muted">
+                    {aid.carbG} g · {aid.fluidL.toFixed(2)} L ·{" "}
+                    {Math.round(aid.sodiumMg)} mg Na
+                  </span>
                 </li>
               ))}
             </ul>
           </>
         ) : (
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="text-sm text-muted">
             Fuel plan needs body mass and sweat rate
-            {sweat === null ? " (test needed)" : ""}. Enter them on Profile when
+            {sweat === null ? " (test needed)" : ""}. Enter them in Settings when
             you have numbers.
           </p>
         )}
       </section>
 
-      <section className="space-y-3">
-        <h2 className="text-lg font-medium">Checklist & packing</h2>
+      <section className="space-y-3 rounded-lg bg-surface p-4 shadow-1">
+        <h2 className="text-h3 font-bold">Checklist & packing</h2>
         <ChecklistClient items={checklist} />
       </section>
-    </div>
+    </>
   );
 }

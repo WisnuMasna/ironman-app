@@ -1,0 +1,87 @@
+/* Tailwind v4 theme mapping for Tri-plan. SOURCE: DESIGN.md §3.8 */
+
+@theme inline {
+  --color-*: initial;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-faint: var(--text-faint);
+
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-primary-soft: var(--primary-soft);
+
+  --color-swim: var(--swim);
+  --color-swim-ink: var(--swim-ink);
+  --color-swim-soft: var(--swim-soft);
+  --color-bike: var(--bike);
+  --color-bike-ink: var(--bike-ink);
+  --color-bike-soft: var(--bike-soft);
+  --color-run: var(--run);
+  --color-run-ink: var(--run-ink);
+  --color-run-soft: var(--run-soft);
+  --color-strength: var(--strength);
+  --color-strength-ink: var(--strength-ink);
+  --color-strength-soft: var(--strength-soft);
+  --color-rest: var(--rest);
+  --color-on-sport: var(--on-sport);
+
+  --color-z1: var(--z1);
+  --color-z2: var(--z2);
+  --color-z3: var(--z3);
+  --color-z4: var(--z4);
+  --color-z5: var(--z5);
+  --color-z-skill: var(--z-skill);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-heat: var(--heat);
+  --color-heat-soft: var(--heat-soft);
+
+  --font-sans: var(--font-ui);
+  --font-numeric: var(--font-numeric);
+
+  --text-display: var(--fs-display);
+  --text-display--line-height: var(--lh-display);
+  --text-h1: var(--fs-h1);
+  --text-h1--line-height: var(--lh-h1);
+  --text-h2: var(--fs-h2);
+  --text-h2--line-height: var(--lh-h2);
+  --text-h3: var(--fs-h3);
+  --text-h3--line-height: var(--lh-h3);
+  --text-body: var(--fs-body);
+  --text-body--line-height: var(--lh-body);
+  --text-sm: var(--fs-sm);
+  --text-sm--line-height: var(--lh-sm);
+  --text-caption: var(--fs-caption);
+  --text-caption--line-height: var(--lh-caption);
+  --text-overline: var(--fs-overline);
+  --text-overline--line-height: var(--lh-overline);
+
+  --radius-xs: var(--r-xs);
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+  --radius-pill: var(--r-pill);
+
+  --shadow-1: var(--elev-1);
+  --shadow-2: var(--elev-2);
+  --shadow-3: var(--elev-3);
+
+  --spacing-tap: var(--tap-min);
+}
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));

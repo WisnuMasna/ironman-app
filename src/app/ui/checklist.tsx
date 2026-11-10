@@ -58,7 +58,7 @@ export function ChecklistClient({ items }: { items: ChecklistItem[] }) {
   const packing = items.filter((i) => i.kind === "PACKING");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <ChecklistSection title="Race week" items={raceWeek} done={done} onToggle={toggle} />
       <ChecklistSection title="Packing" items={packing} done={done} onToggle={toggle} />
     </div>
@@ -78,18 +78,18 @@ function ChecklistSection({
 }) {
   return (
     <section className="space-y-2">
-      <h3 className="text-sm font-semibold">{title}</h3>
-      <ul className="space-y-2 text-sm">
+      <h3 className="text-sm font-bold text-muted">{title}</h3>
+      <ul className="space-y-2">
         {items.map((item) => (
           <li key={item.id}>
-            <label className="flex items-start gap-2">
+            <label className="flex min-h-tap items-start gap-3 rounded-md bg-surface-2 px-3 py-3 text-sm">
               <input
                 type="checkbox"
                 checked={Boolean(done[item.id])}
                 onChange={() => onToggle(item.id)}
-                className="mt-1"
+                className="mt-1 h-5 w-5"
               />
-              <span className={done[item.id] ? "text-zinc-400 line-through" : ""}>
+              <span className={done[item.id] ? "text-faint line-through" : ""}>
                 {item.text}
               </span>
             </label>
