@@ -18,9 +18,12 @@ const TABS = [
   { href: "/profile", label: "Settings", icon: IconSettings },
 ] as const;
 
-export function TabBar() {
-  const pathname = usePathname();
+function isActive(pathname: string, href: string): boolean {
+  if (href === "/") return pathname === "/" || pathname.startsWith("/session/");
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
+export function TabBarNav({ pathname }: { pathname: string }) {
   return (
     <nav
       aria-label="Primary"
@@ -29,10 +32,7 @@ export function TabBar() {
     >
       <div className="mx-auto grid max-w-[30rem] grid-cols-5 gap-1 px-2 py-2 lg:max-w-[48rem]">
         {TABS.map((tab) => {
-          const active =
-            tab.href === "/"
-              ? pathname === "/"
-              : pathname === tab.href || pathname.startsWith(`${tab.href}/`);
+          const active = isActive(pathname, tab.href);
           const Icon = tab.icon;
           return (
             <Link
@@ -52,4 +52,9 @@ export function TabBar() {
       </div>
     </nav>
   );
+}
+
+export function TabBar() {
+  const pathname = usePathname();
+  return <TabBarNav pathname={pathname} />;
 }
