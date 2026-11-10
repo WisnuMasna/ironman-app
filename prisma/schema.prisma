@@ -1,4 +1,3 @@
-// M0 stub only — full athlete/race schema lands in M9.
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,7 +7,181 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Healthcheck {
+enum DisciplineStatus {
+  SKILL
+  ZONES
+}
+
+enum Sport {
+  SWIM
+  BIKE
+  RUN
+  BRICK
+  STRENGTH
+}
+
+enum CheckpointSport {
+  SWIM
+  BIKE
+}
+
+enum GoalTier {
+  CUTOFFS
+  SUB_630
+  SUB_600
+}
+
+enum FitnessTestKind {
+  FTP
+  RUN_THRESHOLD
+  CSS
+  LTHR_BIKE
+  LTHR_RUN
+  SWEAT_RATE
+}
+
+enum FitnessTestSource {
+  FIELD_TEST
+  RACE_RESULT
+}
+
+enum WorkoutStatus {
+  DONE
+  PARTIAL
+  MISSED
+}
+
+model Athlete {
+  id                   Int              @id @default(autoincrement())
+  name                 String
+  bodyMassKg           Float?
+  sweatRateLPerH       Float?
+  weeklyHoursAvailable Float?
+  restDays             Json?
+  longDay              Int?
+  recoveryBlockWeeks   Int              @default(3)
+  hasBike              Boolean          @default(false)
+  bikeFitDone          Boolean          @default(false)
+  hasIndoorTrainer     Boolean          @default(false)
+  hasClipless          Boolean          @default(false)
+  swimStatus           DisciplineStatus @default(SKILL)
+  bikeStatus           DisciplineStatus @default(SKILL)
+  runStatus            DisciplineStatus @default(ZONES)
+
+  raceResults      RaceResult[]
+  skillCheckpoints SkillCheckpoint[]
+  races            Race[]
+  fitnessTests     FitnessTest[]
+  plannedSessions  PlannedSession[]
+  workoutLogs      WorkoutLog[]
+}
+
+model RaceResult {
+  id             Int     @id @default(autoincrement())
+  athleteId      Int
+  date           String?
+  distanceM      Float
+  timeSec        Int
+  conditionsNote String?
+  label          String?
+
+  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+}
+
+model SkillCheckpoint {
+  id          Int             @id @default(autoincrement())
+  athleteId   Int
+  sport       CheckpointSport
+  code        String
+  description String
+  targetDate  String
+  doneDate    String?
+
+  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@unique([athleteId, code])
+}
+
+model Race {
+  id                 Int    @id @default(autoincrement())
+  athleteId          Int
+  name               String
+  date               String
+  swimM              Int
+  bikeKm             Float
+  runKm              Float
+  startTimeLocal     String
+  aidStationsBikeKm  Json
+  aidStationsRunKm   Json
+  cutoffs            Json
+
+  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  goals   Goal[]
+}
+
+model Goal {
   id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
+  raceId    Int
+  tier      GoalTier
+  finishSec Int?
+  swimSec   Int?
+  t1Sec     Int?
+  bikeSec   Int?
+  t2Sec     Int?
+  runSec    Int?
+  bufferSec Int?
+
+  race Race @relation(fields: [raceId], references: [id], onDelete: Cascade)
+
+  @@unique([raceId, tier])
+}
+
+model FitnessTest {
+  id        Int               @id @default(autoincrement())
+  athleteId Int
+  date      String
+  kind      FitnessTestKind
+  value     Float
+  estimated Boolean           @default(false)
+  source    FitnessTestSource
+  rawJson   Json?
+
+  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+}
+
+model PlannedSession {
+  id          Int     @id @default(autoincrement())
+  athleteId   Int
+  date        String
+  phase       String
+  weekOut     Int
+  sport       Sport
+  type        String
+  durationMin Int
+  structure   Json?
+  targets     Json?
+  isKey       Boolean @default(false)
+
+  athlete     Athlete      @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  workoutLogs WorkoutLog[]
+}
+
+model WorkoutLog {
+  id               Int           @id @default(autoincrement())
+  plannedSessionId Int?
+  athleteId        Int
+  date             String
+  sport            Sport
+  durationMin      Int
+  distanceM        Float?
+  avgPower         Float?
+  avgPaceSec       Float?
+  avgHr            Int?
+  rpe              Int?
+  status           WorkoutStatus
+  notes            String?
+  heatExposure     Boolean       @default(false)
+
+  athlete        Athlete         @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  plannedSession PlannedSession? @relation(fields: [plannedSessionId], references: [id], onDelete: SetNull)
 }
