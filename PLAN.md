@@ -1,7 +1,7 @@
 # PLAN: Adjustable IRONMAN 70.3 / triathlon training-plan app
 ### Seed example: Wisnu, IRONMAN 70.3 Da Nang (9 May 2027), stretch goal sub-6:00
 
-> Feed this file to Cursor with `@PLAN.md`. Build **one milestone per chat** (see §10 and §11).
+> Feed this file to Cursor with `@PLAN.md`. Build **one milestone per chat** (see §10 and §11). For UI milestones also add `@DESIGN.md` and `@design/tokens.css`.
 > The app is **generic**: every athlete setting is adjustable (§3). Wisnu's Da Nang profile (§2, §4, §5) is only the seed example and the main test fixture.
 > `TODO(athlete)` = a value the athlete enters. `project default, tune` = a number with no source behind it, kept in constants so it can be changed.
 > Not medical advice. Get a check-up before a big training block, especially for racing in the heat.
@@ -138,7 +138,7 @@ The app shows all three and recomputes which one is on track after every test.
 
 ## 6. Features
 
-### 6.1 Core (milestones M0–M17)
+### 6.1 Core (milestones M0–M20)
 1. **Athlete settings** (§3): race and tiers, availability, strength, equipment, preferences, with live re-plan.
 2. **Performance inputs and estimators** (§8.11): enter any times, get zones and paces from the best estimate. Each estimate shows its method and confidence, and is re-derived whenever a new time is entered.
 3. **Zones** (§8.1): power, pace, CSS ± seconds, HR. "Test needed" when nothing is known.
@@ -150,7 +150,7 @@ The app shows all three and recomputes which one is on track after every test.
 9. **Log and adapt**: workouts, missed sessions (§6.2), new times, B-race results to re-estimate, predicted A-race time, and tier status.
 10. **Progress**: predicted A-race time trend, weekly load summary, checkpoints.
 
-### 6.2 Quality of life: must-have (M14–M21)
+### 6.2 Quality of life: must-have (M16–M25)
 | Feature | Behaviour |
 |---|---|
 | Missed-session handling | Options: *skip*, or *move within the same week* if a valid slot exists. **Never stack missed work on top of the next day** (no guilt-cramming). Key sessions take priority for the free slot. |
@@ -172,23 +172,44 @@ The app shows all three and recomputes which one is on track after every test.
 - Readiness inputs (sleep, soreness, HRV) feeding the adaptation rules.
 - Multi-athlete / coach sharing.
 
+### 6.4 First-time-user ease of use (M16, M17, M18, M19, M23)
+For someone new to triathlon (and to training apps). UI details are in DESIGN.md §5.9. Copy, thresholds and step sizes below are `project default, tune`.
+| # | Feature | Behaviour | Milestone |
+|---|---|---|---|
+| 1 | Quick-start onboarding | 3 steps only: A race, goal tier, training days. First plan in under ~2 min. Everything else uses defaults (per-day `maxMinutes` defaults, strength off, every sport without data in skill mode) and is finished later from a **"Finish your profile"** card on Today that lists what's missing and what each item improves. | M17 |
+| 2 | "I don't know" answers | Every fitness question offers plain options ("can't swim 100 m yet", "never ridden a bike", "I run, no recent race", "I don't know") next to the number field. Any non-numeric answer puts that sport in **skill mode** (§8.8) and the first checkpoint is picked from the answer (e.g. "never ridden" → B0). | M17 |
+| 3 | Plain language + glossary | Every jargon term shows a plain label beside it (Z2 → "Easy, can chat"; CSS → "your steady swim pace"). Terms (FTP, CSS, brick, taper, zone, RPE, T1/T2, cut-off, B race…) are tappable and open a glossary sheet. Glossary text lives in `src/content/glossary.ts`, one entry per term with a source link where the definition comes from PLAN.md. | M17 |
+| 4 | First-week walkthrough | A 3-screen tour after the first plan (Today, your week, logging) plus one-time contextual tips per screen, stored as "seen". Replayable from Settings. | M23 |
+| 5 | One primary action per screen | Each screen has exactly one filled primary button. Today: **Start** (session not started), **Log it** (after its time), or **Rest day** (no sessions; opens the rest explainer). | M16 |
+| 6 | One-tap logging | "Done as planned" logs planned duration/targets in one tap. "Something was different" opens the detail fields. RPE is a 1–10 slider with faces and words. | M16 |
+| 7 | "Why this changed" | Any automatic plan change (adapt, missed session, mode, new test) shows a short note on the affected sessions and in a change log: what changed and why, in plain words, with a link to the rule. | M18 |
+| 8 | Forgiving defaults | **Ease me back in**: after missed time, offer a lighter re-entry week instead of resuming (§8.7). **Undo** on every move, skip, edit and log (toast, plus history in Settings). | M23 |
+| 9 | Small wins | One-time celebrations for skill checkpoints (S1…S6, B0…B7) and firsts (first swim lesson, first outdoor ride, first brick, first full week). Calm, dismissible, no streak pressure. | M23 |
+| 10 | Sample-week preview | Last onboarding step shows week 1 as it will be generated, with **Too much / Looks right / Too little**. Each tap moves a volume scale one step (±10% of weekly minutes) and regenerates, within availability caps. | M17 |
+| 11 | Teaching empty states | Empty screens say what will appear and how to unlock it ("Log 3 sessions to see your first trend", "Add a B race to benchmark your fitness"). | M19 (and every screen) |
+| 12 | Beginner safety prompts | Shown in context before Start, once per kind and again on request: first open-water swim (buddy, bright cap, tow float, conditions; never solo, PLAN.md §8.8), first clip-in ride ("practise clipping in on a trainer or on grass first"; trainer practice is from USA Triathlon, the grass tip is project copy), first ride on roads (low-traffic route, signals, no music), first hot session (drink to plan, §9). Other prompts use the skill-track sources in §8.8. | M23 |
+
 ## 7. Stack (beginner-friendly, single user)
 
 - **Next.js (App Router) + TypeScript (`strict`)**: UI and server in one project, with lots of examples. *Tell the agent to check the current Next.js docs for setup commands rather than rely on memory* (the course warns about knowledge cutoffs).
 - **SQLite + Prisma**: a single file DB, no server to run, typed queries, easy reset and seed.
 - **Vitest**: fast unit tests for the training logic. That logic is pure TypeScript, so it doesn't depend on Next.js.
 - **ESLint + `tsc --noEmit`**: lint and type-check feedback that the agent can read.
-- **Tailwind**: optional, for quick styling.
+- **Tailwind v4**: styling via the project tokens (`design/tokens.css` + `design/tailwind-theme.css`, see `DESIGN.md`). v4 is configured in CSS (`@theme`), not a JS config file.
 
 Folder layout:
 ```
 src/
   lib/training/        # PURE functions only: units, zones, estimators, skills, phases, races, availability,
-                       #   strength, sessions, pacing, heat, fuel, adapt, modes, ics, checklist
+                       #   strength, sessions, pacing, heat, fuel, adapt, ease, modes, ics, checklist
     constants.ts       # every number, each with a SOURCE comment
     *.ts / *.test.ts
   lib/db/              # Prisma client + repository functions
+  lib/ui/              # tiny UI helpers (contrast check, class helpers); no training maths
+  components/ui/       # presentational component library (DESIGN.md §4)
+  content/             # glossary.ts, tips.ts, plain-language labels (copy only, no logic)
   app/                 # Next.js routes/pages (thin: call lib, render)
+design/                # tokens.css, tailwind-theme.css, mockups/ (see DESIGN.md)
 prisma/schema.prisma
 seed/athlete-profile.json
 ```
@@ -253,9 +274,11 @@ Seed example (novice swim/bike, strong run):
 - If weekly compliance is below a threshold (project default), the next load week repeats instead of progressing.
 - A predicted finish later than 6:00 flags the weakest leg in the progress view and shows the tier that *is* on track.
 - A skill checkpoint missed by its target date pushes later checkpoints back and raises a warning if S6 or B7 (below) would land after Peak week.
+- **Ease me back in** (`easeBackIn(plan, missedDays, today)`): after ≥ 5 missed days (threshold `project default, tune`), offer a re-entry week at a reduced volume with no Z4+ sessions, then resume the normal progression. Volume % and length are `project default, tune`; sick mode (§6.2) uses the same function.
+- **Every automatic change carries a reason.** `adapt` / `easeBackIn` / modes return `{ plan, warnings[], changes[] }`, where each change is `{ sessionId, kind: 'moved' | 'shortened' | 'dropped' | 'retargeted' | 'added', reasonCode, params }`. The UI turns reason codes into plain "Why this changed" notes (§6.4).
 
 ### 8.8 Skill tracks (novice mode)
-While a discipline is in `skill` status, sessions have **checkpoint goals plus easy RPE targets, never zone targets**. Target dates are project defaults. Moving them is fine; the app re-plans.
+A sport enters `skill` status when there's no numeric input for it, or the athlete picks a plain answer such as "can't swim 100 m yet" or "never ridden" (§6.4). While a discipline is in `skill` status, sessions have **checkpoint goals plus easy RPE targets, never zone targets**. Target dates are project defaults. Moving them is fine; the app re-plans.
 
 **Swim** (sources: [USMS triathlon guide][usms-tri] recommends lessons with a coach experienced with adult learners; [USMS open-water guide][usms-ow] covers never swimming alone, a bright cap and tow float, checking conditions and treading water):
 | # | Checkpoint | Target by |
@@ -376,24 +399,28 @@ Each milestone is a small, self-contained agent task. **Definition of done for e
 | M10 | **TDD** `sessions.ts`: generator using M6–M9, hard vs soft constraints (§8.6). | Property tests over random availability fixtures: hard constraints never broken, every dropped session appears in `warnings[]`, skill sports get no zone targets, taper volume down 41–60% with frequency kept. |
 | M11 | **TDD** `fuel.ts`: per-hour and per-aid-station plan. | Warns on >2% loss and on overdrinking. Seed aid stations map correctly. |
 
-**Phase B: data + core UI**
+**Phase B: data + core UI** (design system and components come before any screen; see `DESIGN.md`)
 | # | Task | Acceptance check |
 |---|---|---|
 | M12 | Prisma schema (data model below) + repositories + seed from `seed/athlete-profile.json`. | `npx prisma db seed` loads Wisnu's example. Repository tests round-trip every entity. |
-| M13 | Onboarding & settings UI: race and tiers, availability grid, strength toggle, equipment, performance inputs, B/C races, units. | Integrated browser: changing availability re-plans future weeks and shows warnings. Entering a 5k changes run zones. No console errors. |
-| M14 | Today / Week views + workout logging + **missed-session handling** (§6.2). | Missing a key session offers skip/move only to valid slots, and nothing is ever stacked onto the next day |
-| M15 | `adapt.ts` (**TDD**): new inputs → re-tailor with diff. B-race result → benchmark → predicted A-race time + tier status. | Logging a faster 10k updates targets and shows the "N sessions updated" diff. Logging a B-race tri updates predictions and tier badges. |
-| M16 | Progress: predicted-time trend chart + weekly load summary. | Chart shows tier lines and a point per estimate change. The weekly summary matches the logs. |
-| M17 | Race-day page: splits, cut-off margins, heat-adjusted run, fuel plan per aid station. | Seed race renders every aid station with quantities. Cut-off margins shown. |
+| M13 | **Design tokens + theme + app shell**: import `design/tokens.css` and `design/tailwind-theme.css` (Tailwind v4) in `globals.css`, load Plus Jakarta Sans + Barlow Semi Condensed with `next/font`, theme preference → `data-theme` (light/dark/system, no flash), app shell with bottom **TabBar** (Today, Plan, Progress, Races, Settings) and empty routes. | Integrated browser at 390 px: tab bar renders in light and dark, theme toggle persists after reload, no console errors. A test asserts every token pair in DESIGN.md §3.4 still meets its ratio (contrast helper in `src/lib/ui/contrast.ts`). `bg-blue-500` doesn't compile. |
+| M14 | **Component library** (`src/components/ui/`, DESIGN.md §4): SessionCard, DayStack, WeekStrip, WeekHeader, IntensityBars, StepList, ZoneChip/SkillChip, RaceCountdown, TierBadge, WarningBanner, BRaceMarker, LoadRing, CheckpointTrack, PhaseTimeline, TrendChart, Fuel/HeatCard, buttons, segmented control, stepper, sheet. Static `/dev/components` gallery with seed-shaped fixtures. | Gallery shows every component and state (planned/done/missed, skill vs zone, on track/at risk/off track/needs data) in light and dark, matching `design/mockups/*.png` in layout. Components take props only (no DB or training imports, enforced by an ESLint import rule). Keyboard focus visible; no drag-only action. |
+| M15 | Onboarding & settings UI (DESIGN.md §5.1, §5.8): race and tiers, availability grid, strength toggle, equipment, performance inputs, B/C races, units. | Integrated browser: changing availability re-plans future weeks and shows warnings. Entering a 5k changes run zones. No console errors. |
+| M16 | Today / Plan (week, month, phases) / Session detail + workout logging + **missed-session handling** (§6.2; DESIGN.md §5.2–5.5). Includes **one primary action per screen** (Today: Start / Log it / Rest day) and **one-tap logging** ("Done as planned", details only if different, RPE 1–10 slider with faces) (§6.4). | Missing a key session offers skip/move only to valid slots, and nothing is ever stacked onto the next day. Each screen renders exactly one primary button. "Done as planned" logs a planned session in one tap, copying planned values. Today matches mockup 02 for the seed. |
+| M17 | **Quick start & plain language** (§6.4 items 1–3, 10; DESIGN.md §5.9): 3-step quick-start onboarding (race, goal, training days) with defaults for the rest; "I don't know" / plain answers on every fitness question → skill mode; sample-week preview with *too much / too little*; "Finish your profile" card on Today; plain-language labels next to jargon + tappable glossary sheet. | Integrated browser: a new athlete reaches a first plan in ≤ 3 steps without typing any fitness number (timed run-through under ~2 min). Answering "can't swim 100 m yet" sets swim to skill mode. *Too much* lowers the sample week's volume one step and re-shows it. Every zone chip shows its plain label; FTP, CSS, brick and taper open a glossary entry. Profile card disappears once all sections are done. |
+| M18 | `adapt.ts` (**TDD**): new inputs → re-tailor with diff. B-race result → benchmark → predicted A-race time + tier status. Every adaptation returns `changes[]` with a reason code, rendered as a **"Why this changed"** note (§6.4 item 7). | Logging a faster 10k updates targets and shows the "N sessions updated" diff. Logging a B-race tri updates predictions and tier badges. Every changed session carries a reason code; no change without one (property test). |
+| M19 | Progress (DESIGN.md §5.6): predicted-time trend chart + weekly load summary + checkpoints, with **teaching empty states** (§6.4 item 11). | Chart shows tier lines and a point per estimate change. The weekly summary matches the logs. A fresh athlete sees "Log 3 sessions to see your first trend" (threshold `project default, tune`) instead of an empty chart. |
+| M20 | Races + race-day page (DESIGN.md §5.7): splits, cut-off margins, heat-adjusted run, fuel plan per aid station. | Seed race renders every aid station with quantities. Cut-off margins shown. |
 
 **Phase C: must-have QoL**
 | # | Task | Acceptance check |
 |---|---|---|
-| M18 | Drag-and-drop / swap with auto-rebalance (reuses the generator's validation). | An invalid move (rest day, over `maxMinutes`, strength spacing) is rejected with a reason. A valid move rebalances and keeps the constraints. |
-| M19 | Sick / travel / injury mode (`modes.ts`, **TDD**). | Sick range clears sessions and adds easy re-entry. Travel override respected. Injury removes only the selected sports. Tier status re-evaluated. |
-| M20 | `.ics` calendar export + JSON/CSV export + validated JSON import (dry-run diff). | The .ics file is valid for a calendar app (one event per session). Export → import round-trip is lossless. |
-| M21 | Race-week checklist & packing list + units/dark mode/mobile polish. | Checklist generated for the seed race (no-wetsuit note, heat kit). Lighthouse/responsive check on a phone viewport. Dark mode toggle persists. |
-| M22 | Review pass: Agent Review on the branch, fix issues, regression tests, update rules. | Findings resolved or recorded; all checks green |
+| M21 | Drag-and-drop / swap with auto-rebalance (reuses the generator's validation), plus the **Move** button flow as the non-drag alternative. | An invalid move (rest day, over `maxMinutes`, strength spacing) is rejected with a reason. A valid move rebalances and keeps the constraints. Every move is possible without dragging. |
+| M22 | Sick / travel / injury mode (`modes.ts`, **TDD**). | Sick range clears sessions and adds easy re-entry. Travel override respected. Injury removes only the selected sports. Tier status re-evaluated. |
+| M23 | **First-week guidance & forgiveness** (§6.4 items 4, 8, 9, 12; DESIGN.md §5.9): 3-screen tour + one-time contextual tips; **undo** on every move/skip/edit/log; **"Ease me back in"** after missed time (`ease.ts`, **TDD**); small-win celebrations for checkpoints and firsts; contextual beginner safety prompts. | Tour shows once and can be replayed from Settings; each tip shows once per screen. Every move/skip/edit/log shows an undo toast and undo restores the exact previous state (test). After ≥ N missed days (`project default, tune`) Today offers *Ease me back in*, which lowers the next week per §8.7. Passing S1 shows a celebration once. The first open-water session and first outdoor clip-in ride show their safety prompt before Start. |
+| M24 | `.ics` calendar export + JSON/CSV export + validated JSON import (dry-run diff). | The .ics file is valid for a calendar app (one event per session). Export → import round-trip is lossless. |
+| M25 | Race-week checklist & packing list + units/mobile polish. | Checklist generated for the seed race (no-wetsuit note, heat kit). Lighthouse/responsive check on a phone viewport. |
+| M26 | Review pass: Agent Review on the branch, fix issues, regression tests, update rules. | Findings resolved or recorded; all checks green |
 
 Later backlog (§6.3) gets its own milestones only when you decide to build it.
 
@@ -404,7 +431,7 @@ Equipment(athleteId, hasBike, bikeFitDone, hasIndoorTrainer, hasClipless, hasPow
 Availability(athleteId, sessionsTotalMax, swimMin, swimMax, bikeMin, bikeMax, runMin, runMax,
              days Json[{weekday, available, maxMinutes, doubleSessionOk}], restDays Json, longRideDay?, longRunDay?, brickDay?)
 StrengthSettings(athleteId, enabled, sessionsPerWeek 0..3, preferredDays Json?, equipment[GYM|HOME|BODYWEIGHT])
-DisciplineStatus(athleteId, sport[SWIM|BIKE|RUN], status[SKILL|ZONES])
+DisciplineStatus(athleteId, sport[SWIM|BIKE|RUN], status[SKILL|ZONES], selfReport?[CANT_YET|NEVER|BEGINNER|REGULAR|UNKNOWN])
 Race(id, athleteId, priority[A|B|C], type, name, date, legs Json[{sport, distanceM}], startTimeLocal?, cutoffs Json?, aidStations Json?, climateNote?)
 GoalTier(id, raceId, code, finishUnderSec?, bufferSec, splits Json?)
 RaceResult(id, raceId, totalSec?, legs Json[{sport, timeSec}], conditions Json?, rpe?)
@@ -416,6 +443,8 @@ PlannedSession(id, athleteId, date, phase, weekOut, sport[SWIM|BIKE|RUN|BRICK|ST
 WorkoutLog(id, plannedSessionId?, date, sport, durationMin, distanceM?, avgPower?, avgPaceSec?, avgHr?, rpe, status[DONE|PARTIAL|MISSED|SKIPPED], notes, heatExposure)
 PlanEvent(id, athleteId, kind[SICK|TRAVEL|INJURY], start, end, affectedSports Json?, availabilityOverride Json?)
 PlanWarning(id, athleteId, weekStart, code, message, fixHint?)
+PlanChange(id, athleteId, createdAt, sessionId?, kind, reasonCode, params Json, source[ADAPT|MISSED|MODE|TEST|USER], undoOf?, undoneAt?)   // "Why this changed" + undo history
+UiState(athleteId, onboarding[QUICK|FULL], profileSections Json, volumeScale, tourDoneAt?, seenTips Json, celebrated Json, safetyPromptsSeen Json)
 ChecklistItem(id, raceId, kind[RACE_WEEK|PACKING], text, done)
 ```
 
@@ -429,14 +458,14 @@ These map the course practices from my study notes onto this build.
 2. **One milestone per chat.** Start a new chat when you switch milestones or when the agent starts going in circles. Reference the earlier chat rather than continuing it. This keeps context small, the answers focused and token costs down.
 3. **Be specific; tag files.** Use `@PLAN.md`, `@src/lib/training/constants.ts` and the relevant test file. Name the function signature you want and point to an existing file as the pattern to follow.
 4. **TDD for every `lib/training` function.** Say "this is TDD, don't mock code that doesn't exist yet". Have it write the tests from the input/output examples in §10, confirm they **fail**, and **commit the tests**. Then ask it to make them pass *without changing the tests*.
-5. **Verification gives the agent feedback.** Tests, `tsc` and ESLint run on every milestone. Use the integrated browser for UI milestones (M8–M10) to check rendering and console errors.
+5. **Verification gives the agent feedback.** Tests, `tsc` and ESLint run on every milestone. Use the integrated browser for UI milestones (M13 onward) at a 390 px phone width, in light and dark, to check rendering and console errors; compare with `design/mockups/*.png`.
 6. **Watch the diff and stop scope creep.** If it touches files outside the milestone, stop it (Cmd/Ctrl+Shift+Backspace). If the build misses, **revert, make the plan more specific and rerun it**. Don't pile on patch prompts.
 7. **Small semantic commits.** Commit after tests are written, then after they pass. One logical change per commit.
 8. **Bugs:** for clear errors, paste the stack trace plus when it happens. For tricky ones (e.g. week boundaries in `buildPhases`, B-race windows overlapping, or a generator that drops a session without a warning), use **Debug Mode**: form a hypothesis, add logging, reproduce, then make a targeted fix. Always add a regression test. Don't accept a fix you don't understand, such as a null check that hides bad data.
 9. **Start with the logic, not the UI.** Phase A (M1–M11) is pure functions with tests. Get it right before any UI. M8–M10 (availability, strength, generator) are the heart; give each its own chat and use **property-style tests with random availability fixtures** so the generator can't silently break constraints.
 10. **Treat training numbers with suspicion.** The agent may invent plausible zone percentages. Every constant must carry a SOURCE comment. If it can't cite one, it must say `project default, tune`.
 11. **Rules, kept few.** `.cursor/rules/*.mdc` (see below) plus `AGENTS.md`. When the agent repeats a mistake, add one short line to a rule, the way the course's "Step 5: write a rule" suggests.
-12. **Review before calling it done.** Run Agent Review / "what would a reviewer flag?" at the end of each UI milestone and at M13.
+12. **Review before calling it done.** Run Agent Review / "what would a reviewer flag?" at the end of each UI milestone and at M26.
 13. **Costs.** Long chats resend all their context, and output tokens cost more than input. Keep chats short, ask for concise answers, and don't paste whole files when `@`-tagging will do.
 
 ---

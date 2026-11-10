@@ -1,0 +1,17 @@
+---
+description: UI conventions — design tokens, components, layout and accessibility for src/app and src/components
+globs: src/app/**, src/components/**, src/lib/ui/**, design/**
+alwaysApply: false
+---
+
+- Follow `DESIGN.md` (principles, components, screen layouts) and use `design/tokens.css` via `design/tailwind-theme.css` (Tailwind v4, CSS-first `@theme`). Compare screens with `design/mockups/*.png`.
+- Tokens only: semantic utilities such as `bg-surface`, `text-muted`, `bg-swim-soft`, `text-run-ink`, `rounded-md`, `shadow-1`, `text-h1`, `font-numeric`. No raw hex/rgb, no default Tailwind palette (it is removed), no inline magic sizes. Need a new value? Add a token to tokens.css + tailwind-theme.css + DESIGN.md §3 in the same change and re-check contrast.
+- Sport colour = what (swim/bike/run/strength/brick/rest), zone colour Z1–Z5 = how hard. Never use one scale for the other. Skill-mode steps use SkillChip/dashed bars, never zone colours.
+- Text on a sport fill uses `text-on-sport`; sport-coloured text uses the `*-ink` tokens. Colour is never the only signal: always icon + label.
+- Screens are composed from `src/components/ui/` (DESIGN.md §4). Components are presentational: props in, no Prisma/db or `lib/training` imports, no training maths.
+- Pages are thin: load via `src/lib/db/` repositories, call `src/lib/training/` functions, render. No training math in components.
+- All displayed numbers go through `src/lib/training/units.ts` formatters using the athlete's unit preferences (km/mi, °C/°F). Times, paces and countdowns use `font-numeric` (tabular figures). Never format pace/time inline.
+- Show `warnings[]` from the generator as WarningBanner at the top of Today/Plan week with their fix hints; never hide them. Unknown values show honest states ("test needed", "needs data", "estimated"), never a made-up number.
+- Mobile-first at 390 px; light + dark via `<html data-theme>` (omit for system). Tap targets ≥ 44 px (`min-h-tap`), visible focus ring, every drag action has a button alternative (Move), respect reduced motion.
+- Check new pages in the integrated browser at phone width in light and dark, and look at the console.
+- One filled primary button per screen (PrimaryActionBar). Jargon always sits next to a plain label (PlainLabel/TermLink → glossary in `src/content/`). Every move, skip, edit and log shows an UndoToast; automatic plan changes show a ChangeNote built from `changes[].reasonCode` (DESIGN.md §5.9).

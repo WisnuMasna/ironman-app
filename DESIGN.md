@@ -47,7 +47,10 @@
 4. **Safety and cut-offs are visible, not buried.** Skill checkpoints, open-water safety and cut-off margins show where the decision is made.
 5. **Warnings come with a fix.** Every `warnings[]` item renders as a banner with a one-tap fix hint (PLAN.md §8.9).
 6. **Calm density.** One hero metric per card, max two lines of meta per session, generous 16 px gutters.
-7. **Accessible by default.** WCAG 2.2 AA contrast, 44 px tap targets, colour never the only signal (icon + label always), no drag-only actions, reduced-motion support.
+7. **One clear next step.** Each screen has exactly one filled primary button; everything else is secondary or a link.
+8. **Plain words first, jargon second.** Every term has a plain label and a tap-to-explain glossary entry; nothing is lost if you skip it.
+9. **Forgiving.** Every move, skip, edit and log can be undone; missed time leads to *Ease me back in*, never a guilt pile.
+10. **Accessible by default.** WCAG 2.2 AA contrast, 44 px tap targets, colour never the only signal (icon + label always), no drag-only actions, reduced-motion support.
 
 ---
 
@@ -138,7 +141,7 @@ Original 24 px stroke icons, 2 px stroke, round caps (drawn in `design/mockups/s
 ---
 
 ## 4. Component library (`src/components/ui/`)
-Each component is presentational: props in, no data fetching, no training maths. Each gets a story on the `/dev/components` gallery page (M14) in light and dark.
+Each component is presentational: props in, no data fetching, no training maths. Each gets a story on the `/dev/components` gallery page (M14) in light and dark. The first-time-user components (PrimaryActionBar … SafetyPrompt) are built in the milestone that first needs them (M16, M17, M18, M19, M23; see §5.9) and added to the same gallery.
 
 | Component | Anatomy & behaviour | Key props | A11y |
 |---|---|---|---|
@@ -159,25 +162,43 @@ Each component is presentational: props in, no data fetching, no training maths.
 | **TrendChart** | Predicted finish over time: line + range band, dashed tier lines labelled at the right, B-race diamonds, "now" rule. Y axis in h:mm. | `points[]`, `tiers[]`, `events[]` | Table toggle below chart |
 | **FuelCard / HeatCard** | Icon + headline ("Fuel 60 g/h", "Heat rehearsal") + one line; opens the fuel planner or heat calculator. | `plan`, `note` | — |
 | **TabBar** | 5 tabs: **Today, Plan, Progress, Races, Settings**. Active tab = primary icon in a soft pill + label. 84 px incl. home-indicator area. | `active` | `nav` landmark, labels always visible |
+| **PrimaryActionBar** | Sticky bottom bar with exactly **one** primary button, optional secondary. Today states: **Start** (before the session), **Log it** (after its planned time or once started), **Rest day** (no sessions; opens the rest explainer). | `action`, `secondary?` | One primary per screen (enforced in the gallery test) |
+| **PlainLabel / TermLink** | Jargon + plain label pair: "Z2 · Easy, can chat", "CSS · your steady swim pace". The jargon part is a TermLink (dotted underline + ⓘ) that opens the GlossarySheet. | `term`, `plain?` | Link text names the term; 44 px hit area |
+| **GlossarySheet** | Bottom sheet: term, one-sentence plain definition, "why it matters for you", example from the athlete's own numbers when known, "Read more" source link. Searchable list from Settings. | `termId` | Focus trapped; Esc/back closes |
+| **AnswerChoice** | Big option rows for fitness questions: plain answers ("Can't swim 100 m yet", "Never ridden", "I don't know") above an optional "I know my time" row that reveals the numeric input. Picking a plain answer shows a SkillChip preview ("We'll start you on swim skills"). | `options[]`, `onNumeric` | Radio group semantics |
+| **ProfileCompletionCard** | Today card after quick start: ring "3 of 7 done", next missing item with what it improves ("Add your training times → sessions fit your days"), Continue link; disappears when complete; snooze for a week. | `sections[]` | Not dismissable by swipe only |
+| **SampleWeekPreview** | Week 1 as DayStacks (compact) + total hours, then a 3-way control **Too much · Looks right · Too little**; each tap regenerates with ±1 volume step and shows "−35 min" / "+30 min". Caps at availability. | `week`, `volumeStep` | Live region announces new total |
+| **RpeSlider** | 1–10 slider with 5 face icons at 1–2, 3–4, 5–6, 7–8, 9–10 and a word under the thumb ("Easy, could chat"). Large thumb (44 px), tap anywhere to set. | `value` | Native range input; value text exposed |
+| **OneTapLog** | Session card footer: **Done as planned** (primary) + "Something was different" link that expands the LogSheet fields. Shows the logged state inline with an UndoToast. | `session` | — |
+| **ChangeNote** | Small inset note on a changed session: icon + "Why this changed: moved to Thu because Wed is now a rest day." Links to the change log. Grouped summary at the top of the week when > 2 changes. | `change` | Text, not icon-only |
+| **UndoToast** | Bottom toast above the tab bar: "Session moved to Thu · **Undo**", 8 s (`project default, tune`), pauses on focus/hover; every action also lands in Settings → History. | `label`, `onUndo` | `role="status"`; Undo reachable by keyboard |
+| **EaseBackCard** | After missed time: "Welcome back. Ease me back in?" with the lighter week preview, **Ease me back in** (primary) / "Pick up where I left off". | `missedDays`, `preview` | — |
+| **CelebrationCard** | One-time card or sheet for a checkpoint or first ("First 25 m continuous! S1 done"), sport-coloured badge, what's next, Share/Close. Confetti-free by default, subtle scale-in respecting reduced motion. No streaks. | `milestone` | Focus moves to it; closable |
+| **CoachTip / TourStep** | Tour: 3 full-screen steps (Today · Your week · Logging) with illustration area, dots, Skip. Tip: one-time anchored callout per screen ("Tap a zone to see what it means"), dismiss = seen. | `tipId`, `anchor` | Never blocks the primary action; Esc closes |
+| **EmptyState** | Icon + what will appear here + how to unlock it + optional action ("Log 3 sessions to see your first trend" · progress 1/3). | `title`, `unlock`, `progress?` | — |
+| **SafetyPrompt** | Pre-start sheet with a checklist the athlete ticks before **Start** is enabled (first open-water swim, first clip-in ride, first road ride, first hot session). Shown once per kind, available again via ⓘ on the session. | `kind`, `items[]` | Checkboxes; Start disabled state explained in text |
 | **Buttons, SegmentedControl, Stepper, Toggle, Sheet** | Primary pill 52 px, secondary on `surface-2`, ghost link; segmented Week/Month/Phases; minute stepper with − / + (44 px); sheet with `xl` top radius for Move/Log. | — | Focus ring `--focus-ring` 2 px + 2 px offset |
 
 ---
 
 ## 5. Screens (mobile-first; tablet/desktop = same column centred, max-width 480 px, Plan shows 2 weeks side by side ≥ 1024 px)
 
-### 5.1 Onboarding (multi-step, ~8 steps, progress bar + "n of 8", back on every step, skip where optional)
+### 5.1 Onboarding
+**Quick start (default, 3 steps + preview, target < ~2 min):** (1) A race (search or custom; date fills cut-offs for known races), (2) goal tier (*just finish inside the cut-offs* / a time / stretch), (3) training days (tap the weekdays; per-day time uses defaults), then the **SampleWeekPreview** with *Too much / Looks right / Too little* and **Build my plan**. Fitness questions are skipped: every sport without data starts in skill mode, and Today shows the **ProfileCompletionCard** to fill in the rest (full steps below) whenever the athlete likes. A "Set up everything now" link takes the full path.
+
+**Full setup (~8 steps, progress bar + "n of 8", back on every step, skip where optional):**
 1. **Goal race**: pick A race (search or custom) → date, distances, cut-offs prefilled for known races (Da Nang seed).
 2. **Goal tiers**: cut-offs / sub-X / stretch, with plain-language realism note.
-3. **Your sports today**: per sport, "I can't yet / beginner / experienced" → sets skill or zones mode.
-4. **Current times (optional)**: run 5k/10k/HM/M, swim CSS/400/1000, bike FTP/20-min/timed ride. Each shows the estimate it produces ("HM 1:39:00 → threshold ≈ 4:35/km, medium confidence").
+3. **Your sports today**: per sport, **AnswerChoice** with plain answers ("Can't swim 100 m yet", "Never ridden a bike", "I run, no recent race", "I don't know") → any of these sets skill mode and picks the first checkpoint.
+4. **Current times (optional, every question has "I don't know")**: run 5k/10k/HM/M, swim CSS/400/1000, bike FTP/20-min/timed ride. Each shows the estimate it produces ("HM 1:39:00 → threshold ≈ 4:35/km, medium confidence").
 5. **Availability** *(mockup 01)*: weekday toggle + minute stepper + "2×" double-session chip, long-session day chips, live **feasibility banner** before continuing.
 6. **Strength (optional)**: toggle, 0–3/week, equipment.
 7. **Equipment**: bike, fit, trainer, clipless, power meter, HR strap, pool, open water. No bike → explains indoor bridge.
-8. **Summary**: everything on one card with Edit links, the first warnings, then "Build my plan".
+8. **Summary + sample week**: everything on one card with Edit links, the first warnings, then the SampleWeekPreview and "Build my plan".
 *Improves on Runna*: progress indicator on every step (the ScreensDesign critique), feasibility shown **before** the plan, skill-mode choice per sport.
 
 ### 5.2 Today *(mockups 02 light, 02b dark)*
-Header (date overline, greeting, avatar → Settings) → **WarningBanner(s)** → **RaceCountdown** (phase bar + tier badges) → **WeekStrip** → "Today · 2 sessions · 1 h 25 min" → **DayStack** of SessionCards (AM swim lesson in skill mode, PM easy run with Z2 pace from the seed threshold) → Heat/Fuel card. Rest day: a calm card with "Why rest matters" and tomorrow's preview. Race week: countdown becomes hours + race-week checklist.
+Header (date overline, greeting, avatar → Settings) → **WarningBanner(s)** → **RaceCountdown** (phase bar + tier badges) → **WeekStrip** → "Today · 2 sessions · 1 h 25 min" → **DayStack** of SessionCards (AM swim lesson in skill mode, PM easy run with Z2 pace from the seed threshold) → Heat/Fuel card. Rest day: a calm card with "Why rest matters" and tomorrow's preview. **PrimaryActionBar**: Start / Log it / Rest day (one primary only). After quick start, the **ProfileCompletionCard** sits under the countdown; in week 1 the tour and one CoachTip per screen appear once; after missed time the **EaseBackCard** replaces the warnings slot. Race week: countdown becomes hours + race-week checklist.
 
 ### 5.3 Plan *(mockup 03: Week)*
 - **Segmented control**: Week · Month · Phases. "Move sessions" opens move mode (tap a session → tap a valid day; invalid days greyed with a reason). Drag is an enhancement on top.
@@ -186,21 +207,40 @@ Header (date overline, greeting, avatar → Settings) → **WarningBanner(s)** �
 - **Phases**: vertical list of phases with dates, focus line, weekly hours range, key checkpoints and B races; tap → week.
 
 ### 5.4 Session detail *(mockup 04: brick)*
-Tinted hero (sport or brick gradient) → back / overflow → sport tile + date·phase·weeks-out overline + title → chips (Key, total, per-sport split) → **Why** line → warnings (e.g. "FTP test needed": ride by RPE, watts appear after a test) → **IntensityBars** with sport baseline + T2 divider → **StepList** (bike steps, T2 practice row, run-off-the-bike at goal race pace 5:27/km from the seed split, cool-down) → Fuel + Heat cards → sticky **Move** / **Log session**. Open-water swims show the safety checklist (buddy, bright cap, tow float, conditions) above the steps and can't be logged as "solo".
+Tinted hero (sport or brick gradient) → back / overflow → sport tile + date·phase·weeks-out overline + title → chips (Key, total, per-sport split) → **Why** line → warnings (e.g. "FTP test needed": ride by RPE, watts appear after a test) → **IntensityBars** with sport baseline + T2 divider → **StepList** (bike steps, T2 practice row, run-off-the-bike at goal race pace 5:27/km from the seed split, cool-down) → Fuel + Heat cards → sticky **Move** / **Log session**. Open-water swims show the safety checklist (buddy, bright cap, tow float, conditions) above the steps and can't be logged as "solo"; the first one (and the first clip-in or road ride) opens a **SafetyPrompt** before Start. Changed sessions show a **ChangeNote**. Zone chips read "Z2 · Easy, can chat" with a TermLink.
 
 ### 5.5 Log workout (sheet from Session detail or "+")
+Default is **OneTapLog**: *Done as planned* logs planned values in one tap (UndoToast). *Something was different* opens the sheet below; RPE uses the **RpeSlider** with faces.
 Done / partial / skipped segmented → duration, distance, avg pace/power/HR (fields depend on sport and equipment) → RPE 1–10 slider with words → "heat exposure" toggle → notes. After save: a short result card ("Target hit: 38/40 min in Z2") and any re-plan diff ("2 future sessions updated"). Missed session → options only to valid slots this week, or skip; never "add to tomorrow".
 
 ### 5.6 Progress *(mockup 05, illustrative future data)*
-Predicted finish hero (display number + range + TierBadges) → **TrendChart** (tier lines, range band, B-race diamonds) → per-leg card (prediction vs target, state badge, heat-adjusted note, T1/T2 budgets, weakest leg named) → **CheckpointTrack** for swim and bike → weekly load (LoadRing + 6-week bars) → estimates list with method + confidence (e.g. "CSS · 400+200 test · high").
+Predicted finish hero (display number + range + TierBadges) → **TrendChart** (tier lines, range band, B-race diamonds) → per-leg card (prediction vs target, state badge, heat-adjusted note, T1/T2 budgets, weakest leg named) → **CheckpointTrack** for swim and bike → weekly load (LoadRing + 6-week bars) → estimates list with method + confidence. Before there's data, each block is an **EmptyState** ("Log 3 sessions to see your first trend", "Do a CSS test to get swim zones"). Checkpoint passes trigger a **CelebrationCard** once. Estimates read e.g. "CSS · 400+200 test · high".
 
 ### 5.7 Races
 A race card (countdown, cut-offs with predicted margins, "minimum bike speed to make 5:30") → B/C races list (BRaceMarker rows, mini-taper and recovery dates) → "Add race" (type, date, distances) → after a B race: "Log result" with per-leg times, conditions, RPE → benchmark card (e.g. "A-race prediction 6:31 → 6:24"). Race-day page: splits, heat-adjusted run, fuel plan per aid station, checklist and packing list.
 
 ### 5.8 Settings & availability
-Grouped list: Profile & units (km/mi, °C/°F, week start, theme light/dark/system) · Availability (same grid as onboarding) · Strength · Equipment · Performance inputs (history + add) · Sick/travel/injury mode · Calendar export (.ics) · Data export/import · About & sources. Each change that re-plans shows a confirm sheet with the diff and the new warnings.
+Grouped list: Profile & units (km/mi, °C/°F, week start, theme light/dark/system) · Availability (same grid as onboarding) · Strength · Equipment · Performance inputs (history + add) · Sick/travel/injury mode · Calendar export (.ics) · Data export/import · About & sources. Each change that re-plans shows a confirm sheet with the diff and the new warnings. Also: **History** (every plan change with its "why" and Undo), **Glossary**, **Replay tour**.
 
 ---
+
+### 5.9 First-time-user ease of use (PLAN.md §6.4; built in M16, M17, M18, M19, M23)
+| Feature | Where it shows | Components | Copy / rule notes |
+|---|---|---|---|
+| Quick start | Onboarding §5.1, Today | SampleWeekPreview, ProfileCompletionCard | 3 steps; defaults for the rest; "Set up everything now" link |
+| "I don't know" answers | Onboarding steps 3–4, Settings → Performance inputs | AnswerChoice, SkillChip | Plain answer → skill mode + first checkpoint |
+| Plain language + glossary | Every zone chip, target, metric label | PlainLabel, TermLink, GlossarySheet | Zone labels (project copy, tune): Z1 "Very easy, recovery" · Z2 "Easy, can chat" · Z3 "Steady, short sentences" · Z4 "Hard, a few words" · Z5 "Very hard, can't talk". Glossary: FTP, CSS, threshold, zone, RPE, brick, taper, T1/T2, cut-off, A/B/C race, skill mode, open water |
+| First-week walkthrough | After the first plan; one tip per screen | TourStep, CoachTip | Tour: Today → Your week → Logging; Skip always visible; replay in Settings |
+| One primary action | Every screen | PrimaryActionBar | Today: Start / Log it / Rest day. Session detail: Log session. Onboarding: Continue |
+| One-tap logging | Session cards, Session detail | OneTapLog, RpeSlider | RPE words (project copy): 1–2 "Very easy" · 3–4 "Easy, could chat" · 5–6 "Steady" · 7–8 "Hard" · 9–10 "All out" |
+| Why this changed | Changed sessions, week header, Settings → History | ChangeNote | From `changes[].reasonCode`; one sentence, plain words, e.g. "Shortened to 45 min: Friday's time limit is 45 min" |
+| Forgiving defaults | Today after missed time; toast after any action | EaseBackCard, UndoToast | Never stack missed work; undo restores the exact previous state |
+| Small wins | After a checkpoint or first | CelebrationCard | Firsts: swim lesson, 25 m continuous, bike bought, first outdoor ride, first brick, first full week, first B race. Shown once, no streak counters |
+| Sample-week preview | End of onboarding (quick and full) | SampleWeekPreview | ±10% weekly minutes per tap (project default, tune), capped by availability |
+| Teaching empty states | Progress, Races, Plan before generation, History | EmptyState | Say what appears and how to unlock it, with progress (1/3) |
+| Beginner safety prompts | Before Start on the first session of each risky kind | SafetyPrompt | Open water: buddy, bright cap, tow float, conditions (USMS). Clip-in: practise on a trainer (USA Triathlon) or on grass first (project copy). Roads: low-traffic route, signals, no music (USA Triathlon). Heat: drink to plan (PLAN.md §9) |
+
+Mockup note: the PNGs in §7 predate this section, so they don't show the PrimaryActionBar on Today, the ProfileCompletionCard, plain zone labels or OneTapLog. Follow this section, not the mockups, for those.
 
 ## 6. Where this improves on Runna for triathlon
 | Area | Runna (as observed) | This app | Why |
@@ -212,6 +252,7 @@ Grouped list: Profile & units (km/mi, °C/°F, week start, theme light/dark/syst
 | Heat notes | Not observed | HeatCard, heat-adjusted run pace, heat-exposure tagging | Da Nang in May is hot and humid (PLAN.md §2, §9) |
 | Honest data | Not observed | "Needs data", "test needed", "estimated", confidence labels | Novices start without FTP/CSS; the UI must not invent numbers |
 | Feasibility | Not observed | Warnings with fix hints from availability to cut-offs, shown during onboarding too | The generator never fails silently (PLAN.md §8.9) |
+| First-time users | Long onboarding quiz (ScreensDesign critique) | 3-step quick start + sample week, plain answers instead of numbers, glossary, undo, Ease me back in, safety prompts | A complete beginner shouldn't need to know FTP or CSS to start |
 | Accessibility | Dark-only screenshots | Light + dark, measured contrast, Move button as drag alternative | WCAG 2.2 AA |
 
 ---

@@ -12,3 +12,7 @@ alwaysApply: false
 - Discipline status: if a sport is `skill` (see `disciplineStatus`), its sessions use skill checkpoints + RPE/time targets from `skills.ts` — never zone targets. A `null` threshold means "test needed", never a guessed default.
 - Equipment gating: `hasBike: false` → only indoor spin/stationary-bike "bridge" sessions; no outdoor rides, no FTP test. Open-water swim sessions always carry the safety checklist and are never solo.
 - Thresholds estimated from race results (VDOT) are flagged `estimated: true` until a field test replaces them.
+- The generator ALWAYS returns `{ plan, warnings[] }`. Availability (rest days, per-day `maxMinutes`, per-sport max, total sessions) and strength spacing are hard constraints; anything dropped or shortened must appear in `warnings[]` with a typed code (PLAN.md §8.9). Never throw or silently drop.
+- Estimators return `{ value, method, sourceUrl, confidence, inputIds, estimated }`; zones are always derived from `bestEstimate()`, never from raw inputs.
+- Athlete-specific values (Wisnu/Da Nang) live only in `seed/` and test fixtures — never hard-code them in `src/`.
+- Anything that changes an existing plan (`adapt`, `easeBackIn`, modes, missed-session handling) returns `{ plan, warnings[], changes[] }`; every changed session has a `reasonCode` (PLAN.md §8.7). No silent changes, and changes must be reversible from the stored previous state (undo).
