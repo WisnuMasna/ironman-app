@@ -8,6 +8,7 @@ import {
   replanOverdueCheckpoints,
   shouldRepeatNextLoadWeek,
 } from "../training/adapt";
+import { moveMissedSession, skipMissedSession } from "../training/missed";
 import { buildPhases, type PhasePlan } from "../training/phases";
 import {
   generateWeekSessions,
@@ -118,13 +119,34 @@ export async function loadWeekPlan(now: Date): Promise<LoadedPlan | null> {
     (log) => log.date >= weekStartMonday && log.date <= adapted.days[6]?.date
   );
 
-  const missedKeys = weekLogs.filter((log) => log.status === WorkoutStatus.MISSED);
-  for (const log of missedKeys) {
+  const missedLogs = weekLogs.filter((log) => log.status === WorkoutStatus.MISSED);
+  for (const log of missedLogs) {
     const sport = prismaSportToSession(log.sport);
     if (sport === null) continue;
+
+    if (log.movedToDate === "skip") {
+      const skipped = skipMissedSession(adapted, { date: log.date, sport });
+      if (skipped.ok) adapted = skipped.value;
+      continue;
+    }
+
+    if (log.movedToDate !== null && /^\d{4}-\d{2}-\d{2}$/.test(log.movedToDate)) {
+      const moved = moveMissedSession(adapted, {
+        fromDate: log.date,
+        sport,
+        toDate: log.movedToDate,
+      });
+      if (moved.ok) adapted = moved.value;
+      continue;
+    }
+
     const day = adapted.days.find((d) => d.date === log.date);
     const wasHard = day?.sessions.some((s) => s.sport === sport && s.isHard) ?? false;
-    if (!wasHard) continue;
+    if (!wasHard) {
+      const skipped = skipMissedSession(adapted, { date: log.date, sport });
+      if (skipped.ok) adapted = skipped.value;
+      continue;
+    }
     const missed = handleMissedKeySession(adapted, { date: log.date, sport });
     if (missed.ok) adapted = missed.value;
   }

@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { moveSlotsByDate } from "@/lib/db/move-slots";
 import { loadWeekPlan } from "@/lib/db/plan";
 import { requestNow } from "./request-now";
 import { DaySessions } from "./ui/session-list";
@@ -35,7 +36,11 @@ async function TodayContent() {
         </p>
       ) : null}
       {todayDay ? (
-        <DaySessions day={todayDay} logs={plan.athlete.workoutLogs} />
+        <DaySessions
+          day={todayDay}
+          logs={plan.athlete.workoutLogs}
+          moveSlotsByDate={moveSlotsByDate(plan.week)}
+        />
       ) : (
         <p className="text-sm text-zinc-500">No sessions scheduled for today.</p>
       )}

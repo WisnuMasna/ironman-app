@@ -179,6 +179,8 @@ model WorkoutLog {
   avgHr            Int?
   rpe              Int?
   status           WorkoutStatus
+  /// QoL missed handling: null + MISSED = auto key-swap; "skip"; or move target YYYY-MM-DD
+  movedToDate      String?
   notes            String?
   heatExposure     Boolean       @default(false)
 

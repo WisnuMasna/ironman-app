@@ -98,6 +98,7 @@ export async function logWorkout(input: {
   status: WorkoutStatus;
   rpe: number | null;
   notes: string | null;
+  movedToDate?: string | null;
 }): Promise<void> {
   const existing = await prisma.workoutLog.findFirst({
     where: {
@@ -111,6 +112,7 @@ export async function logWorkout(input: {
     status: input.status,
     rpe: input.rpe,
     notes: input.notes,
+    movedToDate: input.movedToDate ?? null,
   };
   if (existing !== null) {
     await prisma.workoutLog.update({ where: { id: existing.id }, data });

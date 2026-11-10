@@ -82,12 +82,27 @@ export async function saveWorkoutLog(formData: FormData): Promise<void> {
   const status = parseStatus(formData.get("status"));
   const durationRaw = formData.get("durationMin");
   const rpeRaw = formData.get("rpe");
+  const missAction = formData.get("missAction");
+  const moveTo = formData.get("moveToDate");
   if (typeof date !== "string" || sport === null || status === null) return;
   const durationMin = typeof durationRaw === "string" ? Number(durationRaw) : NaN;
   if (!Number.isFinite(durationMin) || durationMin < 0) return;
   const rpe =
     typeof rpeRaw === "string" && rpeRaw.length > 0 ? Number(rpeRaw) : null;
   if (rpe !== null && (!Number.isFinite(rpe) || rpe < 1 || rpe > 10)) return;
+
+  let movedToDate: string | null = null;
+  if (status === "MISSED") {
+    if (missAction === "skip") {
+      movedToDate = "skip";
+    } else if (
+      missAction === "move" &&
+      typeof moveTo === "string" &&
+      /^\d{4}-\d{2}-\d{2}$/.test(moveTo)
+    ) {
+      movedToDate = moveTo;
+    }
+  }
 
   await logWorkout({
     athleteId: athlete.id,
@@ -97,6 +112,7 @@ export async function saveWorkoutLog(formData: FormData): Promise<void> {
     status,
     rpe,
     notes: null,
+    movedToDate,
   });
   revalidateApp();
 }

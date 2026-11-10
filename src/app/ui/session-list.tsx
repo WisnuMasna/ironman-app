@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import type { WorkoutLog } from "@prisma/client";
 import { saveWorkoutLog } from "../actions";
 import type { DayPlan, PlannedSession } from "@/lib/training/sessions";
@@ -21,11 +24,16 @@ export function SessionCard({
   session,
   date,
   log,
+  moveSlots,
 }: {
   session: PlannedSession;
   date: string;
   log: WorkoutLog | null;
+  moveSlots: string[];
 }) {
+  const [status, setStatus] = useState(log?.status ?? "DONE");
+  const [missAction, setMissAction] = useState<"skip" | "move">("skip");
+
   return (
     <li className="space-y-2 rounded-md border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700">
       <p className="font-medium capitalize">{sessionLabel(session)}</p>
@@ -37,6 +45,11 @@ export function SessionCard({
       {log !== null ? (
         <p className="text-xs text-zinc-600 dark:text-zinc-400">
           Logged: {log.status.toLowerCase()}
+          {log.movedToDate === "skip"
+            ? " · skipped"
+            : log.movedToDate
+              ? ` · moved to ${log.movedToDate}`
+              : ""}
           {log.rpe !== null ? ` · RPE ${log.rpe}` : ""} · {log.durationMin} min
         </p>
       ) : null}
@@ -48,7 +61,10 @@ export function SessionCard({
           Status
           <select
             name="status"
-            defaultValue={log?.status ?? "DONE"}
+            value={status}
+            onChange={(e) =>
+              setStatus(e.target.value as "DONE" | "PARTIAL" | "MISSED")
+            }
             className="rounded border border-zinc-300 bg-white px-1 py-0.5 dark:border-zinc-600 dark:bg-zinc-900"
           >
             <option value="DONE">Done</option>
@@ -56,6 +72,42 @@ export function SessionCard({
             <option value="MISSED">Missed</option>
           </select>
         </label>
+        {status === "MISSED" ? (
+          <>
+            <label className="flex flex-col gap-1">
+              Missed action
+              <select
+                name="missAction"
+                value={missAction}
+                onChange={(e) =>
+                  setMissAction(e.target.value === "move" ? "move" : "skip")
+                }
+                className="rounded border border-zinc-300 bg-white px-1 py-0.5 dark:border-zinc-600 dark:bg-zinc-900"
+              >
+                <option value="skip">Skip (drop)</option>
+                <option value="move" disabled={moveSlots.length === 0}>
+                  Move within week
+                </option>
+              </select>
+            </label>
+            {missAction === "move" && moveSlots.length > 0 ? (
+              <label className="flex flex-col gap-1">
+                Move to
+                <select
+                  name="moveToDate"
+                  className="rounded border border-zinc-300 bg-white px-1 py-0.5 dark:border-zinc-600 dark:bg-zinc-900"
+                  defaultValue={moveSlots[0]}
+                >
+                  {moveSlots.map((slot) => (
+                    <option key={slot} value={slot}>
+                      {slot}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
+          </>
+        ) : null}
         <label className="flex flex-col gap-1">
           RPE
           <input
@@ -81,9 +133,11 @@ export function SessionCard({
 export function DaySessions({
   day,
   logs,
+  moveSlotsByDate,
 }: {
   day: DayPlan;
   logs: WorkoutLog[];
+  moveSlotsByDate?: Record<string, string[]>;
 }) {
   const name = DAY_NAMES[day.dayOfWeek - 1] ?? "";
   const byKey = new Map(
@@ -104,6 +158,7 @@ export function DaySessions({
               session={session}
               date={day.date}
               log={byKey.get(logKey(day.date, session.sport)) ?? null}
+              moveSlots={moveSlotsByDate?.[day.date] ?? []}
             />
           ))}
         </ul>

@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { moveSlotsByDate } from "@/lib/db/move-slots";
 import { loadWeekPlan } from "@/lib/db/plan";
 import { requestNow } from "../request-now";
 import { DaySessions } from "../ui/session-list";
@@ -39,7 +40,12 @@ async function WeekContent() {
         </p>
       ) : null}
       {plan.week.days.map((day) => (
-        <DaySessions key={day.date} day={day} logs={plan.athlete.workoutLogs} />
+        <DaySessions
+          key={day.date}
+          day={day}
+          logs={plan.athlete.workoutLogs}
+          moveSlotsByDate={moveSlotsByDate(plan.week)}
+        />
       ))}
     </div>
   );

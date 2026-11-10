@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Personal single-user web app that generates a periodised IRONMAN 70.3 training plan for **IRONMAN 70.3 Da Nang, 9 May 2027**, goal tiers: finish inside cut-offs → sub-6:30 → stretch sub-6:00. Athlete: strong runner (HM 1:39, M 3:49), **cycling novice with no bike yet**, near-novice swimmer — swim and bike start in skill mode. Full spec, sourced training rules and milestones: `PLAN.md`. Coding conventions: `.cursor/rules/*.mdc`.
+Generic, fully adjustable single-user triathlon training-plan app (availability, optional strength, performance inputs → estimates, A/B/C races, QoL features). Seed example and main test fixture: Wisnu, **IRONMAN 70.3 Da Nang, 9 May 2027**, goal tiers cut-offs → sub-6:30 → stretch sub-6:00; strong runner (HM 1:39, M 3:49), cycling novice with no bike yet, near-novice swimmer. Full spec, sourced rules and milestones (M0–M22): `PLAN.md`. Conventions: `.cursor/rules/*.mdc`.
 
 ## Commands
 - `npm run dev` — local app
@@ -14,7 +14,7 @@ Personal single-user web app that generates a periodised IRONMAN 70.3 training p
 - `src/lib/training/*.test.ts` — examples of expected behaviour; read these before changing logic
 
 ## Guardrails
-- One milestone per task; stay inside its files.
+- One milestone per task; stay inside its files. Phase A (pure logic) before UI.
 - Don't edit committed tests to make them pass.
 - Personal fitness values in the seed are `null` until Wisnu enters test results — handle `null` (show "test needed"), never fabricate defaults.
 - Safety beats speed: never generate solo open-water swims or outdoor rides before the bike skill checkpoints allow it.
