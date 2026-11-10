@@ -131,6 +131,15 @@ export const OPEN_WATER_SAFETY_CHECKLIST = [
   "conditions-checked",
 ] as const;
 
+// Weekly session generation defaults.
+// SOURCE: Seiler & Tønnessen 2009 (~2 hard sessions/week), https://sportsci.org/2009/ss.htm
+export const MAX_HARD_SESSIONS_PER_WEEK = 2;
+// SOURCE: Bosquet et al. 2007 taper meta-analysis, https://pubmed.ncbi.nlm.nih.gov/17762369/
+export const TAPER_VOLUME_FRACTION = 0.5; // 50% of Build volume (within 41–60% cut)
+// SOURCE: project default, tune (PLAN.md §7.5–7.6)
+export const DEFAULT_RUN_SESSIONS_CAP = 3;
+export const SESSION_HOURS_TOLERANCE_PCT = 15;
+
 // Race distances recognised by the VDOT estimator (metres).
 // SOURCE: project default, tune (standard road distances)
 export const VDOT_HALF_MARATHON_M = 21097.5;
