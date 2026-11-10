@@ -139,6 +139,10 @@ export const TAPER_VOLUME_FRACTION = 0.5; // 50% of Build volume (within 41–60
 // SOURCE: project default, tune (PLAN.md §7.5–7.6)
 export const DEFAULT_RUN_SESSIONS_CAP = 3;
 export const SESSION_HOURS_TOLERANCE_PCT = 15;
+// Adaptation (PLAN.md §7.7). SOURCE: project default, tune
+export const WEEKLY_COMPLIANCE_REPEAT_THRESHOLD = 0.7;
+export const PARTIAL_COMPLIANCE_WEIGHT = 0.5;
+export const POST_FTP_DEFAULT_ZONE = "Z2";
 
 // Race distances recognised by the VDOT estimator (metres).
 // SOURCE: project default, tune (standard road distances)
