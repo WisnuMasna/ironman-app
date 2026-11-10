@@ -1,13 +1,15 @@
 import { Suspense } from "react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { TierBadge } from "@/components/ui/tier-badge";
 import { loadWeekPlan } from "@/lib/db/plan";
+import { TREND_EMPTY_MIN_LOGS } from "@/lib/training/constants";
 import { summarizeWeekLoad } from "@/lib/training/load-summary";
-import type { PlannedSession } from "@/lib/training/sessions";
 import {
   computeLegMetrics,
   getDefaultSub600Splits,
 } from "@/lib/training/pacing";
+import type { PlannedSession } from "@/lib/training/sessions";
 import { formatDurationHms } from "@/lib/training/time";
-import { TierBadge } from "@/components/ui/tier-badge";
 import { requestNow } from "../request-now";
 
 export default function ProgressPage() {
@@ -43,6 +45,8 @@ async function ProgressContent() {
   const splits = getDefaultSub600Splits();
   const metrics = computeLegMetrics(splits);
   const predictedSec = metrics.ok ? metrics.value.totalSec : null;
+  const doneLogs = plan.athlete.workoutLogs.filter((l) => l.status === "DONE").length;
+  const showTrend = doneLogs >= TREND_EMPTY_MIN_LOGS;
   const checkpoints = plan.athlete.skillCheckpoints;
   const swimDone = checkpoints.filter(
     (c) => c.sport === "SWIM" && c.doneDate !== null
@@ -79,7 +83,19 @@ async function ProgressContent() {
           <TierBadge label="Sub-6:30" state="needs-data" />
           <TierBadge label="Sub-6:00" state="needs-data" />
         </div>
-        <PredictedTrendChart predictedSec={predictedSec} />
+        {showTrend ? (
+          <PredictedTrendChart predictedSec={predictedSec} />
+        ) : (
+          <div className="mt-4">
+            <EmptyState
+              title="No trend yet"
+              body={`Log ${TREND_EMPTY_MIN_LOGS} sessions to see your first predicted-finish trend.`}
+              progress={`${doneLogs}/${TREND_EMPTY_MIN_LOGS}`}
+              href="/"
+              cta="Log today's session"
+            />
+          </div>
+        )}
       </section>
 
       <section className="space-y-3">
@@ -152,6 +168,9 @@ async function ProgressContent() {
             Logs CSV
           </a>
         </div>
+        <p className="text-caption text-faint">
+          JSON import validates and dry-runs a diff before writing (see backup helpers).
+        </p>
       </section>
     </>
   );

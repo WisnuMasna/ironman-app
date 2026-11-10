@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { ChangeNoteList } from "@/components/ui/change-note";
 import { RaceCountdown } from "@/components/ui/race-countdown";
 import { WarningBanner } from "@/components/ui/warning-banner";
 import { WeekStrip } from "@/components/ui/week-strip";
@@ -10,6 +11,7 @@ import {
   formatLongDate,
   greetingForHour,
 } from "@/lib/training/dates";
+import { reasonCodeToPlainNote } from "@/lib/training/plan-change";
 import { requestNow } from "./request-now";
 import { DaySessions } from "./ui/session-list";
 
@@ -93,6 +95,12 @@ async function TodayContent() {
           fixLabel="Review this week"
         />
       ) : null}
+
+      <ChangeNoteList
+        notes={[
+          ...new Set(plan.changes.map((change) => reasonCodeToPlainNote(change))),
+        ].slice(0, 3)}
+      />
 
       <RaceCountdown
         raceName="70.3 Da Nang"

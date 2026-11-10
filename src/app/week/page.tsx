@@ -6,7 +6,10 @@ import type { PlannedSession } from "@/lib/training/sessions";
 import { formatDayMonth } from "@/lib/training/dates";
 import { requestNow } from "../request-now";
 import { DaySessions } from "../ui/session-list";
+import { ChangeNoteList } from "@/components/ui/change-note";
 import { WarningBanner } from "@/components/ui/warning-banner";
+import { reasonCodeToPlainNote } from "@/lib/training/plan-change";
+import { TermLink } from "@/components/ui/glossary-sheet";
 
 export default function WeekPage() {
   return (
@@ -62,6 +65,12 @@ async function WeekContent() {
         />
       ) : null}
 
+      <ChangeNoteList
+        notes={[
+          ...new Set(plan.changes.map((change) => reasonCodeToPlainNote(change))),
+        ].slice(0, 4)}
+      />
+
       <section className="space-y-3 rounded-lg bg-surface p-4 shadow-1">
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-h3 font-bold">
@@ -102,7 +111,8 @@ async function WeekContent() {
         <p className="text-caption text-faint">
           {plan.athlete.hasBike ? "Outdoor bike allowed" : "Indoor bike bridge"} · bike{" "}
           {plan.athlete.bikeStatus.toLowerCase()}
-          {plan.week.isRecoveryWeek ? " · recovery week" : ""}
+          {plan.week.isRecoveryWeek ? " · recovery week" : ""} ·{" "}
+          <TermLink term="FTP" /> / <TermLink term="Zone" /> glossary
         </p>
       </section>
 

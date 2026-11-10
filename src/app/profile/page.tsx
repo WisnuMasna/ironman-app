@@ -6,6 +6,7 @@ import { tracksFromDb } from "@/lib/db/tracks";
 import { getNextTestPrompt } from "@/lib/training/skills";
 import { formatDurationHms, formatPaceMinPerKm } from "@/lib/training/time";
 import { buildCogganPowerZones } from "@/lib/training/zones";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { WarningBanner } from "@/components/ui/warning-banner";
 import { markCheckpointDone, saveEquipment, saveFtp } from "../actions";
 import { requestNow } from "../request-now";
@@ -45,6 +46,11 @@ async function ProfileContent() {
           bike {athlete.bikeStatus.toLowerCase()} · run {athlete.runStatus.toLowerCase()}
         </p>
       </header>
+
+      <section className="space-y-3 rounded-lg bg-surface p-4 shadow-1">
+        <h2 className="text-h3 font-bold">Theme</h2>
+        <ThemeToggle />
+      </section>
 
       <section className="space-y-3 rounded-lg bg-surface p-4 shadow-1">
         <h2 className="text-h3 font-bold">Equipment</h2>

@@ -9,6 +9,7 @@ import {
   shouldRepeatNextLoadWeek,
 } from "../training/adapt";
 import { moveMissedSession, skipMissedSession } from "../training/missed";
+import type { PlanChange } from "../training/plan-change";
 import { buildPhases, type PhasePlan } from "../training/phases";
 import {
   generateWeekSessions,
@@ -38,6 +39,7 @@ export type LoadedPlan = {
   week: WeekPlan;
   repeatNextLoadWeek: boolean;
   checkpointWarning: "checkpoint-past-peak" | null;
+  changes: PlanChange[];
 };
 
 export function calendarDateInZone(now: Date, timeZone: string): string {
@@ -115,6 +117,7 @@ export async function loadWeekPlan(now: Date): Promise<LoadedPlan | null> {
   }
 
   let adapted = week.value;
+  const changes: PlanChange[] = [];
   const weekLogs = athlete.workoutLogs.filter(
     (log) => log.date >= weekStartMonday && log.date <= adapted.days[6]?.date
   );
@@ -126,7 +129,10 @@ export async function loadWeekPlan(now: Date): Promise<LoadedPlan | null> {
 
     if (log.movedToDate === "skip") {
       const skipped = skipMissedSession(adapted, { date: log.date, sport });
-      if (skipped.ok) adapted = skipped.value;
+      if (skipped.ok) {
+        adapted = skipped.value;
+        changes.push(...skipped.changes);
+      }
       continue;
     }
 
@@ -136,7 +142,10 @@ export async function loadWeekPlan(now: Date): Promise<LoadedPlan | null> {
         sport,
         toDate: log.movedToDate,
       });
-      if (moved.ok) adapted = moved.value;
+      if (moved.ok) {
+        adapted = moved.value;
+        changes.push(...moved.changes);
+      }
       continue;
     }
 
@@ -144,11 +153,17 @@ export async function loadWeekPlan(now: Date): Promise<LoadedPlan | null> {
     const wasHard = day?.sessions.some((s) => s.sport === sport && s.isHard) ?? false;
     if (!wasHard) {
       const skipped = skipMissedSession(adapted, { date: log.date, sport });
-      if (skipped.ok) adapted = skipped.value;
+      if (skipped.ok) {
+        adapted = skipped.value;
+        changes.push(...skipped.changes);
+      }
       continue;
     }
     const missed = handleMissedKeySession(adapted, { date: log.date, sport });
-    if (missed.ok) adapted = missed.value;
+    if (missed.ok) {
+      adapted = missed.value;
+      changes.push(...missed.changes);
+    }
   }
 
   const ftp = latestTestValue(athlete.fitnessTests, FitnessTestKind.FTP);
@@ -161,6 +176,7 @@ export async function loadWeekPlan(now: Date): Promise<LoadedPlan | null> {
     });
     if (applied.ok) {
       adapted = applyAdaptedSessionsToWeek(adapted, applied.value);
+      changes.push(...applied.changes);
     }
   }
 
@@ -210,6 +226,7 @@ export async function loadWeekPlan(now: Date): Promise<LoadedPlan | null> {
     week: adapted,
     repeatNextLoadWeek: shouldRepeatNextLoadWeek(compliance),
     checkpointWarning,
+    changes,
   };
 }
 

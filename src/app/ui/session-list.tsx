@@ -34,14 +34,37 @@ export function SessionCardWithLog({
 
   return (
     <div className="space-y-2">
-      <button
-        type="button"
-        className="w-full text-left"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-      >
-        <SessionCard session={session} meta={meta} log={log} compact={compact} />
-      </button>
+      <SessionCard session={session} meta={meta} log={log} compact={compact} />
+      {log === null ? (
+        <form action={saveWorkoutLog} className="flex flex-wrap gap-2">
+          <input type="hidden" name="date" value={date} />
+          <input type="hidden" name="sport" value={session.sport} />
+          <input type="hidden" name="durationMin" value={session.durationMin} />
+          <input type="hidden" name="status" value="DONE" />
+          <button
+            type="submit"
+            className="flex min-h-tap flex-1 items-center justify-center rounded-pill bg-primary px-3 text-sm font-bold text-on-primary"
+          >
+            Done as planned
+          </button>
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="min-h-tap rounded-pill bg-surface-2 px-3 text-sm font-bold text-primary"
+          >
+            Something different
+          </button>
+        </form>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="text-caption font-bold text-primary"
+          aria-expanded={open}
+        >
+          {open ? "Hide log form" : "Edit log"}
+        </button>
+      )}
       {open ? (
         <form
           action={saveWorkoutLog}

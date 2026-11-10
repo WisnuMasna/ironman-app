@@ -3,12 +3,12 @@ import {
   POST_FTP_DEFAULT_ZONE,
   WEEKLY_COMPLIANCE_REPEAT_THRESHOLD,
 } from "./constants";
+import type { AdaptOutcome, PlanChange } from "./plan-change";
+import { sessionIdFor } from "./plan-change";
 import type { PlannedSession, WeekPlan } from "./sessions";
 import type { SkillCheckpoint, SkillTracks } from "./skills";
 
-export type AdaptResult<T> =
-  | { ok: true; value: T }
-  | { ok: false; error: "not-found" | "non-positive-input" | "invalid-date" };
+export type AdaptResult<T> = AdaptOutcome<T>;
 
 export type DatedSession = {
   date: string;
@@ -62,7 +62,7 @@ function cloneTracks(tracks: SkillTracks): SkillTracks {
 }
 
 /**
- * A missed key session is never stacked onto the next day (PLAN.md §7.7).
+ * A missed key session is never stacked onto the next day (PLAN.md §8.7).
  * Project default: drop it, and swap the intensity onto a later easy session
  * in the same week if one exists.
  */
@@ -84,22 +84,43 @@ export function handleMissedKeySession(
   }
 
   const missedSession = day.sessions[index];
+  const changes: PlanChange[] = [
+    {
+      sessionId: sessionIdFor(missed.date, missed.sport, index),
+      kind: "dropped",
+      reasonCode: "MISSED_KEY_DROPPED",
+      params: { sport: missed.sport },
+      source: "MISSED",
+    },
+  ];
   day.sessions.splice(index, 1);
 
-  const laterEasy = next.days
-    .filter((d) => d.date > missed.date)
-    .flatMap((d) => d.sessions)
-    .find((s) => !s.isHard);
-
-  if (laterEasy !== undefined) {
-    laterEasy.isHard = true;
-    laterEasy.maxZone = missedSession.maxZone;
-    if (laterEasy.targets.kind === "zone" && missedSession.maxZone !== null) {
-      laterEasy.targets = { kind: "zone", zone: missedSession.maxZone };
+  const laterDay = next.days.find(
+    (d) => d.date > missed.date && d.sessions.some((s) => !s.isHard)
+  );
+  if (laterDay !== undefined) {
+    const laterEasy = laterDay.sessions.find((s) => !s.isHard);
+    if (laterEasy !== undefined) {
+      laterEasy.isHard = true;
+      laterEasy.maxZone = missedSession.maxZone;
+      if (laterEasy.targets.kind === "zone" && missedSession.maxZone !== null) {
+        laterEasy.targets = { kind: "zone", zone: missedSession.maxZone };
+      }
+      changes.push({
+        sessionId: sessionIdFor(
+          laterDay.date,
+          laterEasy.sport,
+          laterDay.sessions.indexOf(laterEasy)
+        ),
+        kind: "retargeted",
+        reasonCode: "MISSED_KEY_INTENSITY_SWAPPED",
+        params: { toDate: laterDay.date, fromDate: missed.date },
+        source: "MISSED",
+      });
     }
   }
 
-  return { ok: true, value: next };
+  return { ok: true, value: next, changes };
 }
 
 export function computeWeekCompliance(input: {
@@ -135,19 +156,33 @@ export function applyNewFitnessTest(input: {
 
   const sportForKind =
     input.kind === "FTP" ? "bike" : input.kind === "CSS" ? "swim" : "run";
+  const reasonCode =
+    input.kind === "FTP"
+      ? "NEW_FTP_RETARGET"
+      : input.kind === "CSS"
+        ? "NEW_CSS_RETARGET"
+        : "NEW_RUN_THRESHOLD_RETARGET";
 
-  const value = input.datedSessions.map((item) => {
+  const changes: PlanChange[] = [];
+  const value = input.datedSessions.map((item, index) => {
     const session = {
       ...item.session,
       targets: { ...item.session.targets },
     };
     if (item.date >= input.testDate && session.sport === sportForKind) {
       session.targets = { kind: "zone", zone: POST_FTP_DEFAULT_ZONE };
+      changes.push({
+        sessionId: sessionIdFor(item.date, session.sport, index),
+        kind: "retargeted",
+        reasonCode,
+        params: { value: input.value, testDate: input.testDate },
+        source: "TEST",
+      });
     }
     return { date: item.date, session };
   });
 
-  return { ok: true, value };
+  return { ok: true, value, changes };
 }
 
 function addDaysIso(iso: string, days: number): string {
@@ -214,7 +249,7 @@ export function replanOverdueCheckpoints(
       ? "checkpoint-past-peak"
       : null;
 
-  return { ok: true, value: { swim, bike, warning } };
+  return { ok: true, value: { swim, bike, warning }, changes: [] };
 }
 
 export function flattenWeekSessions(week: WeekPlan): DatedSession[] {
