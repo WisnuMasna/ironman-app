@@ -31,6 +31,24 @@ export function sportSoftClass(sport: SportKey): string {
   }
 }
 
+/** Card fill only — keep title/meta on --text / --text-muted. */
+export function sportCardSoftClass(sport: SportKey): string {
+  switch (sport) {
+    case "swim":
+      return "bg-swim-soft";
+    case "bike":
+      return "bg-bike-soft";
+    case "run":
+      return "bg-run-soft";
+    case "brick":
+      return "bg-bike-soft";
+    case "strength":
+      return "bg-strength-soft";
+    case "rest":
+      return "bg-surface-2";
+  }
+}
+
 export function sportStripeClass(sport: SportKey): string {
   switch (sport) {
     case "swim":

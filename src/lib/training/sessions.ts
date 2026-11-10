@@ -314,8 +314,7 @@ function toSession(
     status === "skill"
       ? {
           kind: "skill",
-          checkpointHint:
-            slot.sport === "swim" ? "next-swim-checkpoint" : "next-bike-checkpoint",
+          checkpointHint: slot.sport === "swim" ? "S0" : "B0",
           rpe: slot.isHard ? 7 : 4,
         }
       : { kind: "zone", zone: slot.maxZone ?? "Z2" };

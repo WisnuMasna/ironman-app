@@ -33,11 +33,17 @@
   --on-sport: #ffffff;
 
   --z1: #7a869c;
+  --z1-soft: #e8ebf0;
   --z2: #1f8f66;
+  --z2-soft: #e3f6ee;
   --z3: #a88400;
+  --z3-soft: #fbf3d6;
   --z4: #d2621a;
+  --z4-soft: #fbebe3;
   --z5: #d03350;
+  --z5-soft: #fde8ec;
   --z-skill: #1a8fd0;
+  --z-skill-soft: #e3f2fb;
 
   --success: #1f8f66;
   --success-soft: #e3f6ee;
@@ -132,10 +138,17 @@
     --rest: #7d8798;
 
     --z1: #7f8ba0;
+    --z1-soft: #1e232c;
     --z2: #45c892;
+    --z2-soft: #143328;
     --z3: #ebcb4e;
+    --z3-soft: #332c12;
     --z4: #f59a50;
+    --z4-soft: #332315;
     --z5: #f2647a;
+    --z5-soft: #3a1520;
+    --z-skill: #3cb2ee;
+    --z-skill-soft: #12293a;
 
     --success: #45c892;
     --success-soft: #143328;
@@ -187,10 +200,17 @@
   --rest: #7d8798;
 
   --z1: #7f8ba0;
+  --z1-soft: #1e232c;
   --z2: #45c892;
+  --z2-soft: #143328;
   --z3: #ebcb4e;
+  --z3-soft: #332c12;
   --z4: #f59a50;
+  --z4-soft: #332315;
   --z5: #f2647a;
+  --z5-soft: #3a1520;
+  --z-skill: #3cb2ee;
+  --z-skill-soft: #12293a;
 
   --success: #45c892;
   --success-soft: #143328;

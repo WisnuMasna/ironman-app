@@ -9,30 +9,41 @@ const PLAIN: Record<string, string> = {
   Z5c: "Very hard, can't talk",
 };
 
+function zoneTone(zone: string): { soft: string; ink: string; dot: string } {
+  if (zone.startsWith("Z1")) {
+    return { soft: "bg-z1-soft", ink: "text-muted", dot: "bg-z1" };
+  }
+  if (zone.startsWith("Z2")) {
+    return { soft: "bg-z2-soft", ink: "text-success", dot: "bg-z2" };
+  }
+  if (zone.startsWith("Z3")) {
+    return { soft: "bg-z3-soft", ink: "text-warning", dot: "bg-z3" };
+  }
+  if (zone.startsWith("Z4")) {
+    return { soft: "bg-z4-soft", ink: "text-heat", dot: "bg-z4" };
+  }
+  return { soft: "bg-z5-soft", ink: "text-danger", dot: "bg-z5" };
+}
+
 export function ZoneChip({
   zone,
   target,
+  plain = true,
 }: {
   zone: string;
   target?: string;
+  plain?: boolean;
 }) {
-  const plain = PLAIN[zone] ?? zone;
-  const dot =
-    zone.startsWith("Z1")
-      ? "bg-z1"
-      : zone.startsWith("Z2")
-        ? "bg-z2"
-        : zone.startsWith("Z3")
-          ? "bg-z3"
-          : zone.startsWith("Z4")
-            ? "bg-z4"
-            : "bg-z5";
+  const tone = zoneTone(zone);
+  const plainLabel = PLAIN[zone] ?? zone;
 
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-pill bg-surface-2 px-2.5 py-1 text-caption font-bold text-muted">
-      <span className={`h-2 w-2 rounded-full ${dot}`} aria-hidden />
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-pill px-2.5 py-1 text-caption font-bold ${tone.soft} ${tone.ink}`}
+    >
+      <span className={`h-2 w-2 rounded-full ${tone.dot}`} aria-hidden />
       {zone}
-      <span className="font-normal text-faint">· {plain}</span>
+      {plain ? <span className="font-normal text-faint">· {plainLabel}</span> : null}
       {target ? <span className="font-numeric font-normal">· {target}</span> : null}
     </span>
   );
@@ -46,7 +57,7 @@ export function SkillChip({
   rpe?: number;
 }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-pill bg-swim-soft px-2.5 py-1 text-caption font-bold text-swim-ink">
+    <span className="inline-flex items-center gap-1.5 rounded-pill bg-z-skill-soft px-2.5 py-1 text-caption font-bold text-swim-ink">
       Skill · {checkpoint}
       {rpe !== undefined ? <span className="font-normal">· RPE {rpe}</span> : null}
     </span>

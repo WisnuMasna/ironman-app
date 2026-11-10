@@ -20,3 +20,13 @@ Generic, fully adjustable single-user triathlon training-plan app (availability,
 - Personal fitness values in the seed are `null` until Wisnu enters test results — handle `null` (show "test needed"), never fabricate defaults.
 - UI uses design tokens only (no raw hex, no default Tailwind palette); build components (M14) before screens.
 - Safety beats speed: never generate solo open-water swims or outdoor rides before the bike skill checkpoints allow it.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

@@ -66,7 +66,7 @@ async function ProgressContent() {
         </span>
       </header>
 
-      <section className="rounded-lg bg-surface p-4 shadow-1">
+      <section className="rounded-lg bg-surface-2 p-4 shadow-1">
         <p className="text-overline font-bold tracking-[0.08em] text-faint uppercase">
           Predicted finish
         </p>
@@ -142,8 +142,14 @@ async function ProgressContent() {
         <ul className="grid gap-2 sm:grid-cols-3">
           {(["swim", "bike", "run"] as const).map((sport) => {
             const row = summary.bySport[sport];
+            const soft =
+              sport === "swim"
+                ? "bg-swim-soft text-swim-ink"
+                : sport === "bike"
+                  ? "bg-bike-soft text-bike-ink"
+                  : "bg-run-soft text-run-ink";
             return (
-              <li key={sport} className="rounded-md bg-surface-2 px-3 py-2 capitalize">
+              <li key={sport} className={`rounded-md px-3 py-2 capitalize ${soft}`}>
                 <p className="font-bold">{sport}</p>
                 <p className="text-sm text-muted">
                   {row.doneSessions}/{row.plannedSessions} ·{" "}
@@ -189,14 +195,20 @@ function LegRow({
 }) {
   const soft =
     tone === "swim"
-      ? "border-l-swim"
+      ? "border-l-swim bg-swim-soft"
       : tone === "bike"
-        ? "border-l-bike"
-        : "border-l-run";
+        ? "border-l-bike bg-bike-soft"
+        : "border-l-run bg-run-soft";
+  const ink =
+    tone === "swim"
+      ? "text-swim-ink"
+      : tone === "bike"
+        ? "text-bike-ink"
+        : "text-run-ink";
   return (
-    <div className={`rounded-md border-l-4 bg-surface px-4 py-3 shadow-1 ${soft}`}>
+    <div className={`rounded-md border-l-4 px-4 py-3 shadow-1 ${soft}`}>
       <div className="flex items-center justify-between gap-2">
-        <p className="font-bold">{sport}</p>
+        <p className={`font-bold ${ink}`}>{sport}</p>
         <TierBadge
           label={state === "on-track" ? "On track" : "Needs data"}
           state={state}

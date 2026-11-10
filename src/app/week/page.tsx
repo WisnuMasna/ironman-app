@@ -80,7 +80,7 @@ async function WeekContent() {
             {plan.week.phase}
           </span>
         </div>
-        <div className="flex h-3 overflow-hidden rounded-pill bg-surface-2">
+        <div className="flex h-3.5 overflow-hidden rounded-pill bg-surface-2">
           <div
             className="bg-swim"
             style={{ width: `${(swimH / totalH) * 100}%` }}
@@ -97,17 +97,20 @@ async function WeekContent() {
             title={`Run ${runH.toFixed(1)} h`}
           />
         </div>
-        <p className="text-sm text-muted">
-          <span className="text-swim-ink">Swim {swimH.toFixed(1)} h</span>
-          {" · "}
-          <span className="text-bike-ink">Bike {bikeH.toFixed(1)} h</span>
-          {" · "}
-          <span className="text-run-ink">Run {runH.toFixed(1)} h</span>
-          {" · "}
-          <span className="font-numeric font-bold text-text">
+        <div className="flex flex-wrap gap-2 text-caption font-bold">
+          <span className="rounded-pill bg-swim-soft px-2.5 py-1 text-swim-ink">
+            Swim {swimH.toFixed(1)} h
+          </span>
+          <span className="rounded-pill bg-bike-soft px-2.5 py-1 text-bike-ink">
+            Bike {bikeH.toFixed(1)} h
+          </span>
+          <span className="rounded-pill bg-run-soft px-2.5 py-1 text-run-ink">
+            Run {runH.toFixed(1)} h
+          </span>
+          <span className="rounded-pill bg-surface-2 px-2.5 py-1 font-numeric text-text">
             {summary.plannedHours.toFixed(1)} h total
           </span>
-        </p>
+        </div>
         <p className="text-caption text-faint">
           {plan.athlete.hasBike ? "Outdoor bike allowed" : "Indoor bike bridge"} · bike{" "}
           {plan.athlete.bikeStatus.toLowerCase()}

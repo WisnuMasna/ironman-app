@@ -33,11 +33,17 @@
   --color-on-sport: var(--on-sport);
 
   --color-z1: var(--z1);
+  --color-z1-soft: var(--z1-soft);
   --color-z2: var(--z2);
+  --color-z2-soft: var(--z2-soft);
   --color-z3: var(--z3);
+  --color-z3-soft: var(--z3-soft);
   --color-z4: var(--z4);
+  --color-z4-soft: var(--z4-soft);
   --color-z5: var(--z5);
+  --color-z5-soft: var(--z5-soft);
   --color-z-skill: var(--z-skill);
+  --color-z-skill-soft: var(--z-skill-soft);
 
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);

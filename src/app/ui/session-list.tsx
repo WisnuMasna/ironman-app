@@ -35,7 +35,7 @@ export function SessionCardWithLog({
   return (
     <div className="space-y-2">
       <SessionCard session={session} meta={meta} log={log} compact={compact} />
-      {log === null ? (
+      {!compact && log === null ? (
         <form action={saveWorkoutLog} className="flex flex-wrap gap-2">
           <input type="hidden" name="date" value={date} />
           <input type="hidden" name="sport" value={session.sport} />
@@ -55,7 +55,8 @@ export function SessionCardWithLog({
             Something different
           </button>
         </form>
-      ) : (
+      ) : null}
+      {!compact && log !== null ? (
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
@@ -64,7 +65,7 @@ export function SessionCardWithLog({
         >
           {open ? "Hide log form" : "Edit log"}
         </button>
-      )}
+      ) : null}
       {open ? (
         <form
           action={saveWorkoutLog}
@@ -167,17 +168,21 @@ export function DaySessions({
     logs.map((log) => [logKey(log.date, log.sport.toLowerCase()), log])
   );
 
+  const dayNum = Number(day.date.slice(-2));
+  const dateColumn = showDate ? (
+    <div className="flex w-12 shrink-0 flex-col items-center pt-1">
+      <span className="text-caption font-bold text-faint">{name}</span>
+      <span className="font-numeric text-h3 font-bold text-text">{dayNum}</span>
+    </div>
+  ) : null;
+
   if (day.sessions.length === 0) {
     return (
-      <section className="space-y-2">
-        {showDate ? (
-          <h3 className="text-sm font-bold text-muted">
-            {name} {day.date}
-          </h3>
-        ) : null}
-        <div className="flex items-center gap-3 rounded-md bg-surface px-4 py-4 shadow-1">
-          <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-surface-2 text-muted">
-            <SportIcon sport="rest" />
+      <section className="flex gap-3">
+        {dateColumn}
+        <div className="flex min-w-0 flex-1 items-center gap-3 rounded-md bg-surface-2 px-4 py-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-rest text-on-sport">
+            <SportIcon sport="rest" className="h-5 w-5" />
           </div>
           <div>
             <p className="font-bold">Rest day</p>
@@ -189,13 +194,9 @@ export function DaySessions({
   }
 
   return (
-    <section className="space-y-2">
-      {showDate ? (
-        <h3 className="text-sm font-bold text-muted">
-          {name} {day.date}
-        </h3>
-      ) : null}
-      <ul className="space-y-2">
+    <section className="flex gap-3">
+      {dateColumn}
+      <ul className="min-w-0 flex-1 space-y-2">
         {day.sessions.map((session, index) => (
           <li key={`${day.date}-${session.sport}-${index}`}>
             <SessionCardWithLog

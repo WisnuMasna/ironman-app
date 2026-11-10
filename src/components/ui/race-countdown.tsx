@@ -36,19 +36,23 @@ export function RaceCountdown({
           </p>
           <p className="text-sm text-muted">{raceDateLabel}</p>
         </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary-soft text-primary">
+        <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary text-on-primary">
           <IconFlag />
         </div>
       </div>
 
       <div className="mt-4 space-y-2">
-        <div className="flex h-2 overflow-hidden rounded-pill bg-surface-2">
+        <div className="flex h-2.5 overflow-hidden rounded-pill bg-surface-2">
           {PHASES.map((name, index) => (
             <div
               key={name}
               className={`h-full flex-1 ${
-                index <= activeIndex ? "bg-primary" : "bg-transparent"
-              } ${index > 0 ? "border-l border-surface" : ""}`}
+                index < activeIndex
+                  ? "bg-primary/70"
+                  : index === activeIndex
+                    ? "bg-primary"
+                    : "bg-transparent"
+              } ${index > 0 ? "border-l-2 border-surface" : ""}`}
               title={name}
             />
           ))}

@@ -82,7 +82,7 @@ Files: **`design/tokens.css`** (all raw tokens, light + dark) and **`design/tail
 Rules: fills carry **icons**, not body text; text on a fill uses `--on-sport`; sport-coloured text uses the `*-ink` token.
 
 ### 3.3 Colour: intensity zones and status
-- **Zones** `--z1…--z5` (light `#7A869C #1F8F66 #A88400 #D2621A #D03350`, dark `#7F8BA0 #45C892 #EBCB4E #F59A50 #F2647A`): recovery grey → endurance green → tempo yellow → threshold orange → VO2 red. One generic 5-step scale across sports; sport-specific zone numbers (Coggan 7 levels, Friel 5a/b/c) map onto it in `src/lib/training/zones.ts` (mapping is `project default, tune`). **Skill-mode** steps use a dashed swim-blue bar (`--z-skill`), never a zone colour.
+- **Zones** `--z1…--z5` (light `#7A869C #1F8F66 #A88400 #D2621A #D03350`, dark `#7F8BA0 #45C892 #EBCB4E #F59A50 #F2647A`): recovery grey → endurance green → tempo yellow → threshold orange → VO2 red. Soft chip fills `--z1-soft…--z5-soft` / `--z-skill-soft` pair with each. One generic 5-step scale across sports; sport-specific zone numbers (Coggan 7 levels, Friel 5a/b/c) map onto it in `src/lib/training/zones.ts` (mapping is `project default, tune`). **Skill-mode** steps use a dashed swim-blue bar (`--z-skill`), never a zone colour.
 - **Status**: `--success` on track, `--warning` at risk, `--danger` off track / cut-off risk, `--info` neutral notes, `--heat` heat notes; each has a `-soft` background.
 
 ### 3.4 Accessibility contrast (WCAG ratio, computed from tokens)
