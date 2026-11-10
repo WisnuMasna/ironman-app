@@ -93,6 +93,16 @@ export const HEAT_SLOWDOWN_PCT_PER_5C_WBGT = 3.2;
 export const HEAT_REFERENCE_WBGT_C = 10; // top of coolest studied band (5–10 °C)
 export const HEAT_STUDIED_MAX_WBGT_C = 25; // above this → extrapolated warning
 
+// Periodisation lengths in weeks counted back from race week (= week 1).
+// SOURCE: Friel K.I.S.S. Periodization / Base 2 & 3 (PLAN.md §7.2),
+// https://joefrieltraining.com/kiss-periodization/
+export const PHASE_TAPER_WEEKS = 2; // weeks 1–2
+export const PHASE_PEAK_WEEKS = 1; // week 3
+export const PHASE_BUILD_WEEKS = 9; // weeks 4–12
+export const PHASE_BASE_WEEKS = 12; // weeks 13–24
+// Prep is whatever remains from `today` before Base; shrink Prep first, then Base.
+// SOURCE: project default, tune
+
 // Race distances recognised by the VDOT estimator (metres).
 // SOURCE: project default, tune (standard road distances)
 export const VDOT_HALF_MARATHON_M = 21097.5;

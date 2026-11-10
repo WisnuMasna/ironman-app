@@ -70,7 +70,17 @@ describe("phases.ts — buildPhases for Da Nang 2027-05-09", () => {
     const shortBase = short.value.phases.find((p) => p.name === "Base");
 
     // Starting later removes Prep first
-    expect(shortPrep === undefined || (fullPrep !== undefined && shortPrep.endDate < fullPrep.endDate || shortPrep.startDate > fullPrep.startDate)).toBe(true);
+    if (shortPrep === undefined) {
+      expect(fullPrep).toBeDefined();
+    } else {
+      expect(fullPrep).toBeDefined();
+      if (fullPrep) {
+        expect(
+          shortPrep.endDate < fullPrep.endDate ||
+            shortPrep.startDate > fullPrep.startDate
+        ).toBe(true);
+      }
+    }
     expect(shortBase).toBeDefined();
     expect(fullBase).toBeDefined();
   });
